@@ -1,0 +1,22 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+repositories {
+    mavenCentral()
+    google()
+}
+
+dependencies {
+    compileOnly 'org.jetbrains:annotations:23.0.0'
+    implementation ('com.google.guava:guava:31.0.1-jre') {
+        exclude module: 'gson'
+        exclude module: 'error_prone_annotations'
+        exclude module: 'jsr305'
+        exclude module: 'failureaccess'
+        exclude module: 'listenablefuture'
+        exclude module: 'j2objc-annotations'
+        exclude module: 'checker-qual'
+    }
+}
