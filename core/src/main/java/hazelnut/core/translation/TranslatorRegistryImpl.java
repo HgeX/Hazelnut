@@ -1,4 +1,4 @@
-package hazelnut.core.translate;
+package hazelnut.core.translation;
 
 import com.eclipsesource.json.JsonObject;
 import com.google.common.reflect.TypeToken;

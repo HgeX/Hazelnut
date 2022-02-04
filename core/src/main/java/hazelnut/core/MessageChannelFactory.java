@@ -1,6 +1,6 @@
 package hazelnut.core;
 
-import hazelnut.core.translate.TranslatorRegistry;
+import hazelnut.core.translation.TranslatorRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import static java.util.Objects.requireNonNull;

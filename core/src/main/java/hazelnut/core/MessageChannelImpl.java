@@ -1,7 +1,7 @@
 package hazelnut.core;
 
-import hazelnut.core.translate.TranslationException;
-import hazelnut.core.translate.TranslatorRegistry;
+import hazelnut.core.translation.TranslationException;
+import hazelnut.core.translation.TranslatorRegistry;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Logger;

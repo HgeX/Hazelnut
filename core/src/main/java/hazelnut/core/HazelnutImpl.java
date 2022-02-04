@@ -1,7 +1,7 @@
 package hazelnut.core;
 
-import hazelnut.core.translate.TranslatorRegistry;
-import hazelnut.core.translate.TranslatorRegistryImpl;
+import hazelnut.core.translation.TranslatorRegistry;
+import hazelnut.core.translation.TranslatorRegistryImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;

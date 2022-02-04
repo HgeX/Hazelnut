@@ -1,4 +1,4 @@
-package hazelnut.core.translate;
+package hazelnut.core.translation;
 
 import com.google.common.reflect.TypeToken;
 import hazelnut.core.PreparedMessage;
