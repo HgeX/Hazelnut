@@ -1,8 +1,8 @@
 package hazelnut.core.util;
 
+import hazelnut.core.Namespace;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import hazelnut.core.Namespace;
 
 import java.util.logging.Logger;
 

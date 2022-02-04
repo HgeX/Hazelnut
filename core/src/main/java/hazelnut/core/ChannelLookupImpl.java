@@ -9,8 +9,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
-import static java.util.Objects.requireNonNull;
 import static hazelnut.core.util.Miscellaneous.toNamespaced;
+import static java.util.Objects.requireNonNull;
 
 final class ChannelLookupImpl implements ChannelLookup {
     private final Map<String, MessageChannel> knownChannels = new HashMap<>();

@@ -1,24 +1,23 @@
 package hazelnut.core;
 
-import org.jetbrains.annotations.NotNull;
-import hazelnut.core.translate.MessageTranslator;
 import hazelnut.core.translate.TranslationException;
-import hazelnut.core.translate.TranslatorCollection;
+import hazelnut.core.translate.TranslatorRegistry;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Logger;
 
-import static java.util.Objects.requireNonNull;
 import static hazelnut.core.util.Miscellaneous.logger;
+import static java.util.Objects.requireNonNull;
 
 final class MessageChannelImpl implements MessageChannel {
     private static final Logger LOGGER = logger(MessageChannelImpl.class);
     private final String id;
     private final MessageBus messageBus;
-    private final TranslatorCollection translators;
+    private final TranslatorRegistry translators;
 
     MessageChannelImpl(final @NotNull String id,
                        final @NotNull MessageBus messageBus,
-                       final @NotNull TranslatorCollection translators) {
+                       final @NotNull TranslatorRegistry translators) {
         this.id = requireNonNull(id, "id cannot be null");
         this.messageBus = requireNonNull(messageBus, "messageBus cannot be null");
         this.translators = requireNonNull(translators, "translators cannot be null");
@@ -30,16 +29,13 @@ final class MessageChannelImpl implements MessageChannel {
     }
 
     @Override
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void send(final @NotNull Message<?> message) {
-        final MessageTranslator translator = this.translators.find(message.type()).orElseThrow(
-                () -> new IllegalArgumentException("Could not find translator for object %s".formatted(message)));
+    public void send(final @NotNull PreparedMessage<?> message) {
         try {
-            final String finalMessage = this.translators.finalize(translator.toIntermediary(message));
+            final String finalMessage = this.translators.stringify(message);
             this.messageBus.deliver(finalMessage);
 
         } catch (final TranslationException ex) {
-            LOGGER.warning("Could not translate message to intermediary type");
+            LOGGER.warning("Could not translate data to intermediary type");
             LOGGER.warning(message.toString());
             ex.printStackTrace();
         }

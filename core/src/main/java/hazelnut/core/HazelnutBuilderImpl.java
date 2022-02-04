@@ -1,7 +1,6 @@
 package hazelnut.core;
 
 import org.jetbrains.annotations.NotNull;
-import hazelnut.core.translate.TranslatorCollection;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -11,7 +10,6 @@ import static java.util.Objects.requireNonNull;
 final class HazelnutBuilderImpl implements HazelnutBuilder {
     private final String identity;
     private Namespace namespace;
-    private TranslatorCollection translators;
     private Executor executor;
     private MessageBusFactory busFactory;
 
@@ -22,12 +20,6 @@ final class HazelnutBuilderImpl implements HazelnutBuilder {
     @Override
     public @NotNull HazelnutBuilder namespace(final @NotNull Namespace namespace) {
         this.namespace = namespace;
-        return this;
-    }
-
-    @Override
-    public @NotNull HazelnutBuilder translators(final @NotNull TranslatorCollection translators) {
-        this.translators = translators;
         return this;
     }
 
@@ -47,13 +39,11 @@ final class HazelnutBuilderImpl implements HazelnutBuilder {
     public @NotNull Hazelnut build() {
         requireNonNull(this.namespace, "namespace cannot be null");
         requireNonNull(this.busFactory, "busFactory cannot be null");
-        requireNonNull(this.translators, "translators cannot be null");
 
         final Executor executor = this.executor == null ? Executors.newCachedThreadPool() : this.executor;
         return new HazelnutImpl(
                 this.identity,
                 this.namespace,
-                this.translators,
                 executor,
                 this.busFactory
         );

@@ -1,13 +1,14 @@
 package hazelnut.core.translate;
 
+import com.eclipsesource.json.JsonObject;
 import com.google.common.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
 
-public interface MessageTranslator<T, I> {
+public interface MessageTranslator<T> {
 
     @NotNull TypeToken<T> type();
 
-    @NotNull I toIntermediary(final @NotNull T object) throws TranslationException;
+    @NotNull JsonObject toIntermediary(final @NotNull T object) throws TranslationException;
 
-    @NotNull T fromIntermediary(final @NotNull I intermediary) throws TranslationException;
+    @NotNull T fromIntermediary(final @NotNull JsonObject intermediary) throws TranslationException;
 }

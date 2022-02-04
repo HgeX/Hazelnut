@@ -1,7 +1,8 @@
 package hazelnut.core;
 
+import hazelnut.core.translate.TranslatorRegistry;
+import hazelnut.core.translate.TranslatorRegistryImpl;
 import org.jetbrains.annotations.NotNull;
-import hazelnut.core.translate.TranslatorCollection;
 
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -10,6 +11,7 @@ import java.util.stream.Collectors;
 final class HazelnutImpl implements Hazelnut {
     private static final String EVERYONE = "__everyone";
     private static final String PARTICIPANT_DELIMITER = "->";
+    private final TranslatorRegistry translators = new TranslatorRegistryImpl();
     private final String identity;
     private final Namespace namespace;
     private final Executor executor;
@@ -18,17 +20,16 @@ final class HazelnutImpl implements Hazelnut {
 
     HazelnutImpl(final @NotNull String identity,
                  final @NotNull Namespace namespace,
-                 final @NotNull TranslatorCollection translators,
                  final @NotNull Executor executor,
                  final @NotNull MessageBusFactory busFactory) {
         this.identity = identity;
         this.namespace = namespace;
         this.executor = executor;
-        final MessageChannelFactory channelFactory = new MessageChannelFactory(busFactory, translators);
+        final MessageChannelFactory channelFactory = new MessageChannelFactory(busFactory, this.translators);
         this.channelLookup = new ChannelLookupImpl(namespace, channelFactory);
         final MessageChannel everyone = channelFactory.createChannelWithId(EVERYONE);
         this.channelLookup.register(everyone);
-        this.everyone = new MessageAudienceImpl(this.executor, Set.of(everyone));
+        this.everyone = audienceOf(Set.of(everyone));
     }
 
     @Override
@@ -43,7 +44,7 @@ final class HazelnutImpl implements Hazelnut {
 
     @Override
     public @NotNull MessageAudience broadcast() {
-        // Send the message to everyone, but us. To achieve this,
+        // Send the data to everyone, but us. To achieve this,
         // the only thing we need to do, is grab every known channel
         // (except the __everyone) and create an audience with them.
         final String namespacedEveryone = this.namespace.format(EVERYONE);
@@ -52,15 +53,14 @@ final class HazelnutImpl implements Hazelnut {
                 .stream()
                 .filter(x -> !x.channelId().startsWith(namespacedEveryone))
                 .collect(Collectors.toSet());
-        return new MessageAudienceImpl(this.executor, channels);
+        return audienceOf(channels);
     }
 
     @Override
     public @NotNull MessageAudience to(final @NotNull String name) throws IllegalArgumentException {
         final String actualId = this.identity + PARTICIPANT_DELIMITER + name;
         return this.channelLookup.find(actualId)
-                .map(x -> new MessageAudienceImpl(this.executor, Set.of(x)))
-                .map(MessageAudience.class::cast) // I hate you Java
+                .map(x -> audienceOf(Set.of(x)))
                 .orElse(MessageAudience.EMPTY);
     }
 
@@ -70,10 +70,24 @@ final class HazelnutImpl implements Hazelnut {
     }
 
     @Override
+    public @NotNull TranslatorRegistry translators() {
+        return this.translators;
+    }
+
+    @Override
     public void close() throws Exception {
         final Set<MessageChannel> channels = this.channelLookup.channels();
         for (final MessageChannel channel : channels) {
             channel.close();
         }
+    }
+
+    private @NotNull MessageAudience audienceOf(final @NotNull Set<MessageChannel> channels) {
+        return new MessageAudienceImpl(this.executor, channels, this.identity);
+    }
+
+    @Override
+    public String toString() {
+        return "Hazelnut[%s]".formatted(this.identity);
     }
 }

@@ -25,7 +25,7 @@ public final class RedisMessageBus implements MessageBus {
         try (final Jedis jedis = this.pool.getResource()) {
             jedis.publish(this.name, message);
         } catch (final Throwable ex) {
-            LOGGER.warning("Encountered an unexpected exception while publishing message: %s".formatted(message));
+            LOGGER.warning("Encountered an unexpected exception while publishing data: %s".formatted(message));
             ex.printStackTrace();
         }
     }
