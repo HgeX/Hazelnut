@@ -23,7 +23,7 @@ public final class RedisMessageBusFactory implements MessageBusFactory {
         return new RedisMessageBus(name, this.pool);
     }
 
-    public static @NotNull RedisMessageBusFactory create(final @NotNull JedisPool pool) {
+    public static @NotNull RedisMessageBusFactory using(final @NotNull JedisPool pool) {
         return new RedisMessageBusFactory(pool);
     }
 
