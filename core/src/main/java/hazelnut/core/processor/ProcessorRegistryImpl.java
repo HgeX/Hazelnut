@@ -13,6 +13,10 @@ public final class ProcessorRegistryImpl implements ProcessorRegistry {
     private final Map<TypeToken<?>, List<MessageProcessor<?>>> processors = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
+    public ProcessorRegistryImpl() {
+        register(new ResponseProcessor());
+    }
+
     @Override
     public void register(final @NotNull MessageProcessor<?> processor) {
         try {
