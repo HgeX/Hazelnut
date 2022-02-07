@@ -1,5 +1,6 @@
 package hazelnut.core;
 
+import hazelnut.core.processor.ProcessorRegistry;
 import hazelnut.core.translation.TranslatorRegistry;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,6 +17,8 @@ public interface Hazelnut extends AutoCloseable {
     @NotNull ChannelLookup channelLookup();
 
     @NotNull TranslatorRegistry translators();
+
+    @NotNull ProcessorRegistry processors();
 
     static @NotNull HazelnutBuilder forIdentity(final @NotNull String identity) {
         return new HazelnutBuilderImpl(identity);

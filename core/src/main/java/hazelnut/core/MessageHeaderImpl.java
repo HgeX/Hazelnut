@@ -23,4 +23,9 @@ final class MessageHeaderImpl implements MessageHeader {
     public @NotNull String originId() {
         return this.identity;
     }
+
+    @Override
+    public String toString() {
+        return "MessageHeaderImpl{messageId=%s, originId=%s}".formatted(this.messageId, this.identity);
+    }
 }

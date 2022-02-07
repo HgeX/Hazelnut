@@ -27,8 +27,9 @@ final class MessageAudienceImpl implements MessageAudience {
     }
 
     @Override
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public @NotNull CompletableFuture<?> send(final @NotNull Message<?> message) {
-        final PreparedMessage<?> preparedMessage = new PreparedMessage<>(
+        final PreparedMessage preparedMessage = new PreparedMessage(
                 new MessageHeaderImpl(this.identity),
                 message
         );

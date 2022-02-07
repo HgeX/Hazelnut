@@ -2,4 +2,4 @@ package hazelnut.core;
 
 import org.jetbrains.annotations.NotNull;
 
-public record PreparedMessage<T>(@NotNull MessageHeader header, @NotNull Message<T> data) {}
+public record PreparedMessage<T extends Message<T>>(@NotNull MessageHeader header, @NotNull T data) {}
