@@ -3,7 +3,6 @@ package hazelnut.core;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 import static java.util.Objects.requireNonNull;
@@ -28,17 +27,12 @@ final class MessageAudienceImpl implements MessageAudience {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public @NotNull CompletableFuture<?> send(final @NotNull Message<?> message) {
+    public void send(final @NotNull Message<?> message) {
         final PreparedMessage preparedMessage = new PreparedMessage(
                 new MessageHeaderImpl(this.identity),
                 message
         );
-        return CompletableFuture.runAsync(() -> this.channels.forEach(channel -> channel.send(preparedMessage)),
-                this.executor);
-    }
 
-    @Override
-    public void sendNow(final @NotNull Message<?> message) {
-        send(message).join();
+        this.executor.execute(() -> this.channels.forEach(channel -> channel.send(preparedMessage)));
     }
 }
