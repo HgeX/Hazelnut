@@ -4,7 +4,7 @@ import com.eclipsesource.json.JsonObject;
 import com.google.common.reflect.TypeToken;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
-import hazelnut.core.PreparedMessage;
+import hazelnut.core.HazelnutMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -76,7 +76,7 @@ public final class TranslatorRegistryImpl implements TranslatorRegistry {
 
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public @NotNull String stringify(final @NotNull PreparedMessage<?> message) throws TranslationException {
+    public @NotNull String stringify(final @NotNull HazelnutMessage<?> message) throws TranslationException {
         final MessageHeader header = message.header();
         final Message<?> data = message.data();
         final MessageTranslator translator = find(data.type())

@@ -6,7 +6,7 @@ public interface MessageChannel extends AutoCloseable {
 
     @NotNull String channelId();
 
-    void send(final @NotNull PreparedMessage<?> message);
+    void send(final @NotNull HazelnutMessage<?> message);
 
     @Override
     void close() throws Exception;

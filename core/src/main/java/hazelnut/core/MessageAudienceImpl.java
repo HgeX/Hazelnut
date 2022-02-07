@@ -28,11 +28,11 @@ final class MessageAudienceImpl implements MessageAudience {
     @Override
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void send(final @NotNull Message<?> message) {
-        final PreparedMessage preparedMessage = new PreparedMessage(
+        final HazelnutMessage hazelnutMessage = new HazelnutMessage(
                 new MessageHeaderImpl(this.identity),
                 message
         );
 
-        this.executor.execute(() -> this.channels.forEach(channel -> channel.send(preparedMessage)));
+        this.executor.execute(() -> this.channels.forEach(channel -> channel.send(hazelnutMessage)));
     }
 }

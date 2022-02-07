@@ -3,7 +3,7 @@ package hazelnut.core.processor;
 import com.google.common.reflect.TypeToken;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
-import hazelnut.core.PreparedMessage;
+import hazelnut.core.HazelnutMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Logger;
@@ -19,7 +19,8 @@ final class ResponseProcessor implements MessageProcessor<Response> {
     }
 
     @Override
-    public @NotNull Message<?> process(final @NotNull PreparedMessage<Response> message) {
+    public @NotNull Message<?> process(final @NotNull MessageContext<Response> context) {
+        final HazelnutMessage<Response> message = context.message();
         final MessageHeader header = message.header();
         final Response response = message.data();
         if (!response.status()) {

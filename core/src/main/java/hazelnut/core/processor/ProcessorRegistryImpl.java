@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
 
 public final class ProcessorRegistryImpl implements ProcessorRegistry {
@@ -51,15 +50,15 @@ public final class ProcessorRegistryImpl implements ProcessorRegistry {
     }
 
     @Override
-    public @NotNull Optional<MessageProcessor<?>> find(final @NotNull TypeToken<?> type) {
+    public @NotNull List<MessageProcessor<?>> find(final @NotNull TypeToken<?> type) {
         try {
             this.lock.lock();
             final List<MessageProcessor<?>> processors = this.processors.get(type);
             if (processors == null) {
-                return Optional.empty();
+                return List.of();
             }
 
-            throw new UnsupportedOperationException();
+            return List.copyOf(processors);
         } finally {
             this.lock.unlock();
         }

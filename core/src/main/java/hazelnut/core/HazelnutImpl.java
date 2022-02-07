@@ -2,6 +2,7 @@ package hazelnut.core;
 
 import hazelnut.core.processor.ProcessorRegistry;
 import hazelnut.core.processor.ProcessorRegistryImpl;
+import hazelnut.core.processor.ResponseHandler;
 import hazelnut.core.translation.TranslatorRegistry;
 import hazelnut.core.translation.TranslatorRegistryImpl;
 import org.jetbrains.annotations.NotNull;
@@ -15,6 +16,7 @@ final class HazelnutImpl implements Hazelnut {
     private static final String PARTICIPANT_DELIMITER = "->";
     private final TranslatorRegistry translators = new TranslatorRegistryImpl();
     private final ProcessorRegistry processors = new ProcessorRegistryImpl();
+    private final ResponseHandler responseHandler = new ResponseHandler(this);
     private final String identity;
     private final Namespace namespace;
     private final Executor executor;

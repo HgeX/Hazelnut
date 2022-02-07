@@ -1,11 +1,12 @@
 package hazelnut.core.processor;
 
-final class SuccessfulResponse implements Response {
+import org.jetbrains.annotations.NotNull;
 
-    SuccessfulResponse() {}
+import java.util.UUID;
 
-    @Override
-    public boolean status() {
-        return true;
+final class SuccessfulResponse extends AbstractResponse {
+
+    SuccessfulResponse(final @NotNull UUID originalId) {
+        super(originalId, true);
     }
 }

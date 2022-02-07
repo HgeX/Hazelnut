@@ -3,7 +3,7 @@ package hazelnut.core.processor;
 import com.google.common.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
+import java.util.List;
 
 public interface ProcessorRegistry {
 
@@ -13,5 +13,5 @@ public interface ProcessorRegistry {
 
     void unregisterAll(final @NotNull TypeToken<?> type);
 
-    @NotNull Optional<MessageProcessor<?>> find(final @NotNull TypeToken<?> type);
+    @NotNull List<MessageProcessor<?>> find(final @NotNull TypeToken<?> type);
 }

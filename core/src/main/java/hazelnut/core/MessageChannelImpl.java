@@ -29,7 +29,7 @@ final class MessageChannelImpl implements MessageChannel {
     }
 
     @Override
-    public void send(final @NotNull PreparedMessage<?> message) {
+    public void send(final @NotNull HazelnutMessage<?> message) {
         try {
             final String finalMessage = this.translators.stringify(message);
             this.messageBus.deliver(finalMessage);
