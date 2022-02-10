@@ -1,6 +1,5 @@
 package hazelnut.core.processor;
 
-import com.google.common.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -10,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
 public final class ProcessorRegistryImpl implements ProcessorRegistry {
-    private final Map<TypeToken<?>, List<MessageProcessor<?>>> processors = new HashMap<>();
+    private final Map<Class<?>, List<MessageProcessor<?>>> processors = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
     public ProcessorRegistryImpl() {
@@ -21,7 +20,7 @@ public final class ProcessorRegistryImpl implements ProcessorRegistry {
     public void register(final @NotNull MessageProcessor<?> processor) {
         try {
             this.lock.lock();
-            final TypeToken<?> type = processor.messageType();
+            final Class<?> type = processor.messageType();
             final List<MessageProcessor<?>> processors = this.processors.computeIfAbsent(type, x -> new ArrayList<>());
             processors.add(processor);
         } finally {
@@ -33,7 +32,7 @@ public final class ProcessorRegistryImpl implements ProcessorRegistry {
     public void unregister(final @NotNull MessageProcessor<?> processor) {
         try {
             this.lock.lock();
-            final TypeToken<?> type = processor.messageType();
+            final Class<?> type = processor.messageType();
             final List<MessageProcessor<?>> processors = this.processors.get(type);
             if (processors != null) {
                 processors.remove(processor);
@@ -44,7 +43,7 @@ public final class ProcessorRegistryImpl implements ProcessorRegistry {
     }
 
     @Override
-    public void unregisterAll(final @NotNull TypeToken<?> type) {
+    public void unregisterAll(final @NotNull Class<?> type) {
         try {
             this.lock.lock();
             this.processors.remove(type);
@@ -54,7 +53,7 @@ public final class ProcessorRegistryImpl implements ProcessorRegistry {
     }
 
     @Override
-    public @NotNull List<MessageProcessor<?>> find(final @NotNull TypeToken<?> type) {
+    public @NotNull List<MessageProcessor<?>> find(final @NotNull Class<?> type) {
         try {
             this.lock.lock();
             final List<MessageProcessor<?>> processors = this.processors.get(type);
