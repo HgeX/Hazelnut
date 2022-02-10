@@ -1,5 +1,6 @@
 package hazelnut.core;
 
+import hazelnut.core.processor.IncomingMessageListener;
 import hazelnut.core.processor.ProcessorRegistry;
 import hazelnut.core.processor.ProcessorRegistryImpl;
 import hazelnut.core.processor.ResponseHandler;
@@ -16,7 +17,6 @@ final class HazelnutImpl implements Hazelnut {
     private static final String PARTICIPANT_DELIMITER = "->";
     private final TranslatorRegistry translators = new TranslatorRegistryImpl();
     private final ProcessorRegistry processors = new ProcessorRegistryImpl();
-    private final ResponseHandler responseHandler = new ResponseHandler(this);
     private final String identity;
     private final Namespace namespace;
     private final Executor executor;
@@ -30,7 +30,12 @@ final class HazelnutImpl implements Hazelnut {
         this.identity = identity;
         this.namespace = namespace;
         this.executor = executor;
-        final MessageChannelFactory channelFactory = new MessageChannelFactory(busFactory, this.translators);
+        final ResponseHandler responseHandler = new ResponseHandler(this);
+        final MessageChannelFactory channelFactory = new MessageChannelFactory(
+                busFactory,
+                this.translators,
+                new IncomingMessageListener(this.translators, responseHandler)
+        );
         this.channelLookup = new ChannelLookupImpl(namespace, channelFactory);
         final MessageChannel everyone = channelFactory.createChannelWithId(EVERYONE);
         this.channelLookup.register(everyone);
@@ -98,6 +103,6 @@ final class HazelnutImpl implements Hazelnut {
 
     @Override
     public String toString() {
-        return "Hazelnut[%s]".formatted(this.identity);
+        return "Hazelnut{%s}".formatted(this.identity);
     }
 }

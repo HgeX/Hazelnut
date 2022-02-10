@@ -1,6 +1,8 @@
 package hazelnut.core.translation;
 
+import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
+import com.eclipsesource.json.JsonValue;
 import com.google.common.reflect.TypeToken;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
@@ -89,5 +91,16 @@ public final class TranslatorRegistryImpl implements TranslatorRegistry {
         obj.add("data", intermediary);
 
         return obj.toString();
+    }
+
+    @Override
+    public @NotNull <T extends Message<T>> HazelnutMessage<T> parse(final @NotNull String message) throws TranslationException {
+        final JsonValue json = Json.parse(message);
+        if (!json.isObject()) {
+            throw new IllegalStateException("Received corrupted (must be a valid JSON object): %s".formatted(message));
+        }
+
+        final JsonObject obj = json.asObject();
+        final
     }
 }

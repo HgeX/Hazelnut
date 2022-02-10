@@ -2,6 +2,7 @@ package hazelnut.core.translation;
 
 import com.google.common.reflect.TypeToken;
 import hazelnut.core.HazelnutMessage;
+import hazelnut.core.Message;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -20,4 +21,6 @@ public interface TranslatorRegistry {
     @NotNull <T> Optional<MessageTranslator<T>> find(final @NotNull TypeToken<T> type);
 
     @NotNull String stringify(final @NotNull HazelnutMessage<?> message) throws TranslationException;
+
+    @NotNull <T extends Message<T>> HazelnutMessage<T> parse(final @NotNull String message) throws TranslationException;
 }
