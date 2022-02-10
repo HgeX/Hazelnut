@@ -1,13 +1,12 @@
 package hazelnut.core.processor;
 
-import com.google.common.reflect.TypeToken;
 import hazelnut.core.Message;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
 interface Response extends Message<Response> {
-    TypeToken<Response> TYPE = TypeToken.of(Response.class);
+    Class<Response> TYPE = Response.class;
 
     static @NotNull Response noop() {
         return NoOp.INSTANCE;
@@ -18,7 +17,7 @@ interface Response extends Message<Response> {
     }
 
     @Override
-    default @NotNull TypeToken<Response> type() {
+    default @NotNull Class<Response> type() {
         return TYPE;
     }
 

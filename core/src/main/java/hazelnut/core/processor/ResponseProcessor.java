@@ -1,6 +1,5 @@
 package hazelnut.core.processor;
 
-import com.google.common.reflect.TypeToken;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
 import hazelnut.core.HazelnutMessage;
@@ -14,7 +13,7 @@ final class ResponseProcessor implements MessageProcessor<Response> {
     private static final Logger LOGGER = logger(ResponseProcessor.class);
 
     @Override
-    public @NotNull TypeToken<Response> messageType() {
+    public @NotNull Class<Response> messageType() {
         return Response.TYPE;
     }
 

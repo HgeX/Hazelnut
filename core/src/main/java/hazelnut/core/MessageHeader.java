@@ -1,6 +1,5 @@
 package hazelnut.core;
 
-import com.google.common.reflect.TypeToken;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -11,5 +10,5 @@ public interface MessageHeader {
 
     @NotNull String originId();
 
-    @NotNull TypeToken<?> type();
+    @NotNull Class<?> type();
 }

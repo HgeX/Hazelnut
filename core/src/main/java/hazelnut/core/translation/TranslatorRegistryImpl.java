@@ -3,7 +3,6 @@ package hazelnut.core.translation;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
-import com.google.common.reflect.TypeToken;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
 import hazelnut.core.HazelnutMessage;
@@ -16,14 +15,14 @@ import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 
 public final class TranslatorRegistryImpl implements TranslatorRegistry {
-    private final Map<TypeToken<?>, MessageTranslator<?>> translators = new HashMap<>();
+    private final Map<Class<?>, MessageTranslator<?>> translators = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
     @Override
     public void add(final @NotNull MessageTranslator<?> translator) {
         try {
             this.lock.lock();
-            final TypeToken<?> type = translator.type();
+            final Class<?> type = translator.type();
             if (this.translators.containsKey(type)) {
                 throw new IllegalArgumentException("MessageTranslator with type %s is already registered".formatted(type));
             }
@@ -66,7 +65,7 @@ public final class TranslatorRegistryImpl implements TranslatorRegistry {
 
     @Override
     @SuppressWarnings("unchecked")
-    public @NotNull <T> Optional<MessageTranslator<T>> find(final @NotNull TypeToken<T> type) {
+    public @NotNull <T> Optional<MessageTranslator<T>> find(final @NotNull Class<T> type) {
         try {
             this.lock.lock();
             final MessageTranslator<T> translator = (MessageTranslator<T>) this.translators.get(type);

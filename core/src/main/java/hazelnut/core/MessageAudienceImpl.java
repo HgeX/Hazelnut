@@ -29,7 +29,7 @@ final class MessageAudienceImpl implements MessageAudience {
     @SuppressWarnings({"rawtypes", "unchecked"})
     public void send(final @NotNull Message<?> message) {
         final HazelnutMessage hazelnutMessage = new HazelnutMessage(
-                new MessageHeaderImpl(this.identity),
+                new MessageHeaderImpl(this.identity, message.type()),
                 message
         );
 
