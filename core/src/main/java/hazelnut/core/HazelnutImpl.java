@@ -4,17 +4,28 @@ import hazelnut.core.processor.IncomingMessageListener;
 import hazelnut.core.processor.ProcessorRegistry;
 import hazelnut.core.processor.ProcessorRegistryImpl;
 import hazelnut.core.processor.ResponseHandler;
+import hazelnut.core.protocol.HeartbeatProcessor;
+import hazelnut.core.protocol.HeartbeatTask;
+import hazelnut.core.protocol.HeartbeatTranslator;
 import hazelnut.core.translation.TranslatorRegistry;
 import hazelnut.core.translation.TranslatorRegistryImpl;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Collection;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-final class HazelnutImpl implements Hazelnut {
-    private static final String EVERYONE = "__everyone";
-    private static final String PARTICIPANT_DELIMITER = "->";
+import static hazelnut.core.util.Miscellaneous.logger;
+
+public final class HazelnutImpl implements Hazelnut {
+    private static final Logger LOGGER = logger(HazelnutImpl.class);
+    public static final String EVERYONE = "__everyone";
+    public static final String PARTICIPANT_DELIMITER = "->";
     private final TranslatorRegistry translators = new TranslatorRegistryImpl();
     private final ProcessorRegistry processors = new ProcessorRegistryImpl();
     private final String identity;
@@ -22,6 +33,7 @@ final class HazelnutImpl implements Hazelnut {
     private final Executor executor;
     private final ChannelLookup channelLookup;
     private final MessageAudience everyone;
+    private final HeartbeatTask heartbeatTask;
 
     HazelnutImpl(final @NotNull String identity,
                  final @NotNull Namespace namespace,
@@ -37,9 +49,17 @@ final class HazelnutImpl implements Hazelnut {
                 new IncomingMessageListener(this.translators, responseHandler)
         );
         this.channelLookup = new ChannelLookupImpl(namespace, channelFactory);
-        final MessageChannel everyone = channelFactory.createChannelWithId(EVERYONE);
-        this.channelLookup.register(everyone);
+        final MessageChannel everyone = channelFactory.createChannelWithId(EVERYONE, true);
+        this.channelLookup.registerStatic(everyone);
         this.everyone = audienceOf(Set.of(everyone));
+        this.translators.add(new HeartbeatTranslator());
+        this.processors.register(new HeartbeatProcessor(
+                this.identity,
+                (ChannelLookupImpl) this.channelLookup,
+                channelFactory::createChannelWithId
+        ));
+        this.heartbeatTask = new HeartbeatTask(this, executor);
+        this.heartbeatTask.start();
     }
 
     @Override
@@ -59,7 +79,7 @@ final class HazelnutImpl implements Hazelnut {
         // (except the __everyone) and create an audience with them.
         final String namespacedEveryone = this.namespace.format(EVERYONE);
         final Set<MessageChannel> channels = this.channelLookup
-                .channels()
+                .volatileChannels()
                 .stream()
                 .filter(x -> !x.channelId().startsWith(namespacedEveryone))
                 .collect(Collectors.toSet());
@@ -91,9 +111,24 @@ final class HazelnutImpl implements Hazelnut {
 
     @Override
     public void close() throws Exception {
-        final Set<MessageChannel> channels = this.channelLookup.channels();
+        this.heartbeatTask.close();
+        final Set<MessageChannel> channels = Stream.of(this.channelLookup.staticChannels(), this.channelLookup.volatileChannels())
+                .flatMap(Collection::stream)
+                .collect(Collectors.toSet());
         for (final MessageChannel channel : channels) {
             channel.close();
+        }
+
+        if (this.executor instanceof ExecutorService executorService) {
+            executorService.shutdown();
+            try {
+                if (!executorService.awaitTermination(1L, TimeUnit.SECONDS)) {
+                    executorService.shutdownNow();
+                }
+            } catch (final InterruptedException ex) {
+                LOGGER.info("Shutting down executor, potentially interrupting running tasks...");
+                executorService.shutdownNow();
+            }
         }
     }
 

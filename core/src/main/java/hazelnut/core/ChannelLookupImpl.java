@@ -1,19 +1,28 @@
 package hazelnut.core;
 
+import hazelnut.core.util.Cache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.logging.Logger;
 
+import static hazelnut.core.util.Miscellaneous.logger;
 import static hazelnut.core.util.Miscellaneous.toNamespaced;
 import static java.util.Objects.requireNonNull;
 
-final class ChannelLookupImpl implements ChannelLookup {
-    private final Map<String, MessageChannel> knownChannels = new HashMap<>();
+public final class ChannelLookupImpl implements ChannelLookup {
+    private static final Logger LOGGER = logger(ChannelLookupImpl.class);
+    private final Map<String, MessageChannel> staticChannels = new HashMap<>();
+    private final Cache<String, MessageChannel> volatileChannels = Cache.<String, MessageChannel>builder()
+            .lifetime(Duration.ofSeconds(10))
+            .evictionListener(this::onEviction)
+            .build();
     private final ReentrantLock lock = new ReentrantLock();
     private final Namespace namespace;
     private final MessageChannelFactory channelFactory;
@@ -24,11 +33,28 @@ final class ChannelLookupImpl implements ChannelLookup {
         this.channelFactory = requireNonNull(channelFactory, "channelFactory cannot be null");
     }
 
+    private void onEviction(final @NotNull MessageChannel channel) {
+        try {
+            channel.close();
+        } catch (final Throwable ex) {
+            LOGGER.warning("Encountered an unexpected exception while closing channel with id %s".formatted(
+                    channel.channelId()
+            ));
+
+            ex.printStackTrace();
+        }
+    }
+
     @Override
     public @NotNull Optional<MessageChannel> find(final @NotNull String channelId) {
+        return findStatic(channelId).or(() -> findVolatile(channelId));
+    }
+
+    @Override
+    public @NotNull Optional<MessageChannel> findStatic(final @NotNull String channelId) {
         try {
             this.lock.lock();
-            final @Nullable MessageChannel channel = this.knownChannels.get(toNamespaced(this.namespace, channelId));
+            final @Nullable MessageChannel channel = this.staticChannels.get(toNamespaced(this.namespace, channelId));
             return Optional.ofNullable(channel);
         } finally {
             this.lock.unlock();
@@ -36,42 +62,76 @@ final class ChannelLookupImpl implements ChannelLookup {
     }
 
     @Override
-    public @NotNull Set<MessageChannel> channels() {
+    public @NotNull Optional<MessageChannel> findVolatile(final @NotNull String channelId) {
+        return this.volatileChannels.findByKey(channelId);
+    }
+
+    @Override
+    public @NotNull Set<MessageChannel> staticChannels() {
         try {
             this.lock.lock();
-            return Set.copyOf(this.knownChannels.values());
+            return Set.copyOf(this.staticChannels.values());
         } finally {
             this.lock.unlock();
         }
     }
 
     @Override
-    public void register(final @NotNull String channelId) {
+    public @NotNull Set<MessageChannel> volatileChannels() {
+        return Set.copyOf(this.volatileChannels.values());
+    }
+
+    @Override
+    public void registerStatic(final @NotNull String channelId) {
         try {
             this.lock.lock();
             final String actualId = toNamespaced(this.namespace, channelId);
-            if (this.knownChannels.containsKey(actualId)) {
+            if (this.staticChannels.containsKey(actualId)) {
                 throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(actualId));
             }
 
-            this.knownChannels.put(actualId, this.channelFactory.createChannelWithId(actualId));
+            this.staticChannels.put(actualId, this.channelFactory.createChannelWithId(actualId, false));
         } finally {
             this.lock.unlock();
         }
     }
 
     @Override
-    public void register(final @NotNull MessageChannel channel) {
+    public void registerStatic(final @NotNull MessageChannel channel) {
         try {
             this.lock.lock();
             final String id = channel.channelId();
-            if (this.knownChannels.containsKey(id)) {
+            if (this.staticChannels.containsKey(id)) {
                 throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(id));
             }
 
-            this.knownChannels.put(id, channel);
+            this.staticChannels.put(id, channel);
         } finally {
             this.lock.unlock();
         }
+    }
+
+    @Override
+    public void registerVolatile(final @NotNull String channelId) {
+        final String actualId = toNamespaced(this.namespace, channelId);
+        if (this.volatileChannels.findByKey(channelId).isPresent()) {
+            throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(actualId));
+        }
+
+        this.volatileChannels.cache(actualId, this.channelFactory.createChannelWithId(actualId, false));
+    }
+
+    @Override
+    public void registerVolatile(final @NotNull MessageChannel channel) {
+        final String id = channel.channelId();
+        if (this.volatileChannels.findByKey(id).isPresent()) {
+            throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(id));
+        }
+
+        this.volatileChannels.cache(id, channel);
+    }
+
+    public void updateVolatileChannel(final @NotNull MessageChannel channel) {
+
     }
 }

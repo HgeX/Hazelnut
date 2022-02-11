@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-interface Response extends Message<Response> {
+public interface Response extends Message<Response> {
     Class<Response> TYPE = Response.class;
 
     static @NotNull Response noop() {
