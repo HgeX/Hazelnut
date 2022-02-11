@@ -74,16 +74,7 @@ public final class HazelnutImpl implements Hazelnut {
 
     @Override
     public @NotNull MessageAudience broadcast() {
-        // Send the data to everyone, but us. To achieve this,
-        // the only thing we need to do, is grab every known channel
-        // (except the __everyone) and create an audience with them.
-        final String namespacedEveryone = this.namespace.format(EVERYONE);
-        final Set<MessageChannel> channels = this.channelLookup
-                .volatileChannels()
-                .stream()
-                .filter(x -> !x.channelId().startsWith(namespacedEveryone))
-                .collect(Collectors.toSet());
-        return audienceOf(channels);
+        return audienceOf(this.channelLookup.volatileChannels());
     }
 
     @Override
