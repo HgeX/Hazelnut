@@ -86,7 +86,8 @@ public final class TranslatorRegistryImpl implements TranslatorRegistry {
                         "Could not find translator for message %s".formatted(data)));
         final JsonObject obj = new JsonObject()
                 .add("originId", header.originId())
-                .add("messageId", header.messageId().toString());
+                .add("messageId", header.messageId().toString())
+                .add("type", header.type().getName());
         final JsonObject intermediary = translator.toIntermediary(data);
         obj.add("data", intermediary);
 

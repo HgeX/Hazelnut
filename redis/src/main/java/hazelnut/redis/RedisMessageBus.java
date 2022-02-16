@@ -8,6 +8,7 @@ import redis.clients.jedis.JedisPubSub;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -18,11 +19,14 @@ public final class RedisMessageBus implements MessageBus {
     private final Set<Subscriber> subscribers = new HashSet<>();
     private final String name;
     private final JedisPool pool;
+    private final Executor executor;
 
     RedisMessageBus(final @NotNull String name,
-                    final @NotNull JedisPool pool) {
+                    final @NotNull JedisPool pool,
+                    final @NotNull Executor executor) {
         this.name = name;
         this.pool = pool;
+        this.executor = executor;
     }
 
     @Override
@@ -37,14 +41,16 @@ public final class RedisMessageBus implements MessageBus {
 
     @Override
     public void addListener(final @NotNull Consumer<String> listener) {
-        try (final Jedis jedis = this.pool.getResource()) {
-            final Subscriber subscriber = new Subscriber(this.name, listener);
-            jedis.subscribe(subscriber, this.name);
-            this.subscribers.add(subscriber);
-        } catch (final Throwable ex) {
-            LOGGER.warning("Encountered an unexpected exception while subscribing to channel %s".formatted(this.name));
-            ex.printStackTrace();
-        }
+        this.executor.execute(() -> {
+            try (final Jedis jedis = this.pool.getResource()) {
+                final Subscriber subscriber = new Subscriber(this.name, listener);
+                jedis.subscribe(subscriber, this.name);
+                this.subscribers.add(subscriber);
+            } catch (final Throwable ex) {
+                LOGGER.warning("Encountered an unexpected exception while subscribing to channel %s".formatted(this.name));
+                ex.printStackTrace();
+            }
+        });
     }
 
     @Override

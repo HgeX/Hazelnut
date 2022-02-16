@@ -9,7 +9,7 @@ repositories {
 
 dependencies {
     implementation project(':core')
-    implementation ('redis.clients:jedis:4.0.1') {
+    implementation ('redis.clients:jedis:4.1.0') {
         exclude module: 'slf4j-api'
     }
 
