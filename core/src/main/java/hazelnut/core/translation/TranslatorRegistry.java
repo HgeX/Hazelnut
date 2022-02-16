@@ -9,6 +9,10 @@ import java.util.Set;
 
 public interface TranslatorRegistry {
 
+    static @NotNull TranslatorRegistry create() {
+        return new TranslatorRegistryImpl();
+    }
+
     void add(final @NotNull MessageTranslator<?> translator);
 
     boolean replace(final @NotNull MessageTranslator<?> translator);

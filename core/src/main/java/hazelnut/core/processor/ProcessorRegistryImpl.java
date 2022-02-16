@@ -8,11 +8,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.locks.ReentrantLock;
 
-public final class ProcessorRegistryImpl implements ProcessorRegistry {
+final class ProcessorRegistryImpl implements ProcessorRegistry {
     private final Map<Class<?>, List<MessageProcessor<?>>> processors = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
-    public ProcessorRegistryImpl() {
+    ProcessorRegistryImpl() {
         register(new ResponseProcessor());
     }
 

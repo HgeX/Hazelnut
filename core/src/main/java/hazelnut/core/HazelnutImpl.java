@@ -2,13 +2,11 @@ package hazelnut.core;
 
 import hazelnut.core.processor.IncomingMessageListener;
 import hazelnut.core.processor.ProcessorRegistry;
-import hazelnut.core.processor.ProcessorRegistryImpl;
 import hazelnut.core.processor.ResponseHandler;
 import hazelnut.core.protocol.HeartbeatProcessor;
 import hazelnut.core.protocol.HeartbeatTask;
 import hazelnut.core.protocol.HeartbeatTranslator;
 import hazelnut.core.translation.TranslatorRegistry;
-import hazelnut.core.translation.TranslatorRegistryImpl;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -24,8 +22,8 @@ import static hazelnut.core.util.Miscellaneous.logger;
 
 final class HazelnutImpl implements Hazelnut {
     private static final Logger LOGGER = logger(HazelnutImpl.class);
-    private final TranslatorRegistry translators = new TranslatorRegistryImpl();
-    private final ProcessorRegistry processors = new ProcessorRegistryImpl();
+    private final TranslatorRegistry translators = TranslatorRegistry.create();
+    private final ProcessorRegistry processors = ProcessorRegistry.create();
     private final String identity;
     private final Executor executor;
     private final ChannelLookup channelLookup;

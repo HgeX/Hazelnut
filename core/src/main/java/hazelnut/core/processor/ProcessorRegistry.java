@@ -6,6 +6,10 @@ import java.util.List;
 
 public interface ProcessorRegistry {
 
+    static @NotNull ProcessorRegistry create() {
+        return new ProcessorRegistryImpl();
+    }
+
     void register(final @NotNull MessageProcessor<?> processor);
 
     void unregister(final @NotNull MessageProcessor<?> processor);

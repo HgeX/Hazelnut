@@ -16,11 +16,11 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
-public final class TranslatorRegistryImpl implements TranslatorRegistry {
+final class TranslatorRegistryImpl implements TranslatorRegistry {
     private final Map<Class<?>, MessageTranslator<?>> translators = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
 
-    public TranslatorRegistryImpl() {
+    TranslatorRegistryImpl() {
         add(new ResponseTranslator());
     }
 
