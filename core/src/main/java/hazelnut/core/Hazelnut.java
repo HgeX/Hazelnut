@@ -5,6 +5,8 @@ import hazelnut.core.translation.TranslatorRegistry;
 import org.jetbrains.annotations.NotNull;
 
 public interface Hazelnut extends AutoCloseable {
+    String EVERYONE = "__everyone";
+    String PARTICIPANT_DELIMITER = "->";
 
     @NotNull String identity();
 

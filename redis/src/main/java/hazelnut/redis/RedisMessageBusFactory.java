@@ -9,11 +9,14 @@ import hazelnut.core.MessageBus;
 import hazelnut.core.MessageBusFactory;
 
 import java.util.concurrent.Executor;
+import java.util.logging.Logger;
 
+import static hazelnut.core.util.Miscellaneous.logger;
 import static java.util.Objects.requireNonNull;
 import static hazelnut.core.util.Miscellaneous.isNullOrEmpty;
 
 public final class RedisMessageBusFactory implements MessageBusFactory {
+    private static final Logger LOGGER = logger(RedisMessageBusFactory.class);
     private final JedisPool pool;
     private final Executor executor;
 
@@ -25,6 +28,7 @@ public final class RedisMessageBusFactory implements MessageBusFactory {
 
     @Override
     public @NotNull MessageBus create(final @NotNull String name) {
+        LOGGER.info("Creating message channel with id: %s".formatted(name));
         return new RedisMessageBus(name, this.pool, this.executor);
     }
 

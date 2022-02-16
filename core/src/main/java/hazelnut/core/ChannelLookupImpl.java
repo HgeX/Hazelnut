@@ -132,7 +132,12 @@ public final class ChannelLookupImpl implements ChannelLookup {
         this.volatileChannels.cache(id, channel);
     }
 
-    public void updateVolatileChannel(final @NotNull MessageChannel channel) {
-        this.volatileChannels.cacheOrUpdate(channel.channelId(), channel);
+    public void updateVolatileChannel(final @NotNull String channelId, final boolean subscribe) {
+        if (this.volatileChannels.findByKey(channelId).isPresent()) {
+            this.volatileChannels.rebirth(channelId);
+        } else {
+            final MessageChannel channel = this.channelFactory.createChannelWithId(channelId, subscribe);
+            this.volatileChannels.cache(channelId, channel);
+        }
     }
 }

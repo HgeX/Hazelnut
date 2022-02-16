@@ -22,10 +22,8 @@ import java.util.stream.Stream;
 
 import static hazelnut.core.util.Miscellaneous.logger;
 
-public final class HazelnutImpl implements Hazelnut {
+final class HazelnutImpl implements Hazelnut {
     private static final Logger LOGGER = logger(HazelnutImpl.class);
-    public static final String EVERYONE = "__everyone";
-    public static final String PARTICIPANT_DELIMITER = "->";
     private final TranslatorRegistry translators = new TranslatorRegistryImpl();
     private final ProcessorRegistry processors = new ProcessorRegistryImpl();
     private final String identity;
@@ -54,7 +52,6 @@ public final class HazelnutImpl implements Hazelnut {
         this.processors.register(new HeartbeatProcessor(
                 this.identity,
                 (ChannelLookupImpl) this.channelLookup,
-                channelFactory::createChannelWithId,
                 namespace
         ));
         this.heartbeatTask = new HeartbeatTask(this, executor);

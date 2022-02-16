@@ -55,17 +55,6 @@ public final class Cache<K, V> {
         cache(key, existing.value());
     }
 
-    public void cacheOrUpdate(final @NotNull K key, final @NotNull V value) {
-        requireNonNull(key, "key cannot be null");
-        requireNonNull(value, "value cannot be null");
-        final @Nullable Node<V> found = this.entries.get(key);
-        if (found == null) {
-            cache(key, value);
-        } else {
-            rebirth(key);
-        }
-    }
-
     public @NotNull Set<V> values() {
         final Set<V> result = new HashSet<>();
         for (final Map.Entry<K, Node<V>> entry : this.entries.entrySet()) {
