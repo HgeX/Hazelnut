@@ -29,7 +29,6 @@ public final class HazelnutImpl implements Hazelnut {
     private final TranslatorRegistry translators = new TranslatorRegistryImpl();
     private final ProcessorRegistry processors = new ProcessorRegistryImpl();
     private final String identity;
-    private final Namespace namespace;
     private final Executor executor;
     private final ChannelLookup channelLookup;
     private final MessageAudience everyone;
@@ -40,7 +39,6 @@ public final class HazelnutImpl implements Hazelnut {
                  final @NotNull Executor executor,
                  final @NotNull MessageBusFactory busFactory) {
         this.identity = identity;
-        this.namespace = namespace;
         this.executor = executor;
         final ResponseHandler responseHandler = new ResponseHandler(this);
         final MessageChannelFactory channelFactory = new MessageChannelFactory(
@@ -56,7 +54,8 @@ public final class HazelnutImpl implements Hazelnut {
         this.processors.register(new HeartbeatProcessor(
                 this.identity,
                 (ChannelLookupImpl) this.channelLookup,
-                channelFactory::createChannelWithId
+                channelFactory::createChannelWithId,
+                namespace
         ));
         this.heartbeatTask = new HeartbeatTask(this, executor);
         this.heartbeatTask.start();

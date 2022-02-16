@@ -35,6 +35,7 @@ public final class ChannelLookupImpl implements ChannelLookup {
 
     private void onEviction(final @NotNull MessageChannel channel) {
         try {
+            LOGGER.info("Closing message channel %s".formatted(channel.channelId()));
             channel.close();
         } catch (final Throwable ex) {
             LOGGER.warning("Encountered an unexpected exception while closing channel with id %s".formatted(
@@ -63,7 +64,7 @@ public final class ChannelLookupImpl implements ChannelLookup {
 
     @Override
     public @NotNull Optional<MessageChannel> findVolatile(final @NotNull String channelId) {
-        return this.volatileChannels.findByKey(channelId);
+        return this.volatileChannels.findByKey(toNamespaced(this.namespace, channelId));
     }
 
     @Override
@@ -132,6 +133,6 @@ public final class ChannelLookupImpl implements ChannelLookup {
     }
 
     public void updateVolatileChannel(final @NotNull MessageChannel channel) {
-
+        this.volatileChannels.cacheOrUpdate(channel.channelId(), channel);
     }
 }

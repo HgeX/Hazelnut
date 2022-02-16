@@ -40,7 +40,7 @@ public final class HeartbeatTask implements AutoCloseable {
         public void run() {
             while (this.running) {
                 try {
-                    this.hazelnut.broadcast().send(new Heartbeat());
+                    this.hazelnut.everyone().send(new Heartbeat());
                     Thread.sleep(TIMEOUT_MILLIS);
                 } catch (final InterruptedException ignored) {}
             }
