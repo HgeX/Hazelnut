@@ -3,9 +3,9 @@ package hazelnut.core.translation;
 import com.eclipsesource.json.Json;
 import com.eclipsesource.json.JsonObject;
 import com.eclipsesource.json.JsonValue;
+import hazelnut.core.HazelnutMessage;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
-import hazelnut.core.HazelnutMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;

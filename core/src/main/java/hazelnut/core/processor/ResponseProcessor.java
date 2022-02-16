@@ -1,8 +1,8 @@
 package hazelnut.core.processor;
 
+import hazelnut.core.HazelnutMessage;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
-import hazelnut.core.HazelnutMessage;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.logging.Logger;

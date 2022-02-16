@@ -1,19 +1,19 @@
 package hazelnut.redis;
 
+import hazelnut.core.MessageBus;
+import hazelnut.core.MessageBusFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.JedisPoolConfig;
 import redis.clients.jedis.Protocol;
-import hazelnut.core.MessageBus;
-import hazelnut.core.MessageBusFactory;
 
 import java.util.concurrent.Executor;
 import java.util.logging.Logger;
 
+import static hazelnut.core.util.Miscellaneous.isNullOrEmpty;
 import static hazelnut.core.util.Miscellaneous.logger;
 import static java.util.Objects.requireNonNull;
-import static hazelnut.core.util.Miscellaneous.isNullOrEmpty;
 
 public final class RedisMessageBusFactory implements MessageBusFactory {
     private static final Logger LOGGER = logger(RedisMessageBusFactory.class);

@@ -1,8 +1,8 @@
 package hazelnut.core.processor;
 
 import hazelnut.core.Hazelnut;
-import hazelnut.core.Message;
 import hazelnut.core.HazelnutMessage;
+import hazelnut.core.Message;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;

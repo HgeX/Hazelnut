@@ -1,9 +1,9 @@
 package hazelnut.redis;
 
+import hazelnut.core.MessageBus;
 import org.jetbrains.annotations.NotNull;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
-import hazelnut.core.MessageBus;
 import redis.clients.jedis.JedisPubSub;
 
 import java.util.HashSet;
