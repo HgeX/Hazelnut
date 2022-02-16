@@ -47,7 +47,7 @@ public final class HazelnutImpl implements Hazelnut {
                 new IncomingMessageListener(this.translators, responseHandler)
         );
         this.channelLookup = new ChannelLookupImpl(namespace, channelFactory);
-        final MessageChannel everyone = channelFactory.createChannelWithId(EVERYONE, true);
+        final MessageChannel everyone = channelFactory.createChannelWithId(namespace.format(EVERYONE), true);
         this.channelLookup.registerStatic(everyone);
         this.everyone = audienceOf(Set.of(everyone));
         this.translators.add(new HeartbeatTranslator());
