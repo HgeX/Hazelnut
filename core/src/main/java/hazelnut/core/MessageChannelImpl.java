@@ -9,7 +9,7 @@ import java.util.logging.Logger;
 import static hazelnut.core.util.Miscellaneous.logger;
 import static java.util.Objects.requireNonNull;
 
-final class MessageChannelImpl implements MessageChannel {
+class MessageChannelImpl implements MessageChannel {
     private static final Logger LOGGER = logger(MessageChannelImpl.class);
     private final String id;
     private final MessageBus messageBus;
@@ -44,5 +44,21 @@ final class MessageChannelImpl implements MessageChannel {
     @Override
     public void close() throws Exception {
         this.messageBus.close();
+    }
+
+    static final class Inbound extends MessageChannelImpl {
+        Inbound(final @NotNull String id,
+                final @NotNull MessageBus messageBus,
+                final @NotNull TranslatorRegistry translators) {
+            super(id, messageBus, translators);
+        }
+    }
+
+    static final class Outbound extends MessageChannelImpl {
+        Outbound(final @NotNull String id,
+                final @NotNull MessageBus messageBus,
+                final @NotNull TranslatorRegistry translators) {
+            super(id, messageBus, translators);
+        }
     }
 }

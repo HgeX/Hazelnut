@@ -43,7 +43,7 @@ final class HazelnutImpl implements Hazelnut {
                 new IncomingMessageListener(this.translators, responseHandler)
         );
         this.channelLookup = new ChannelLookupImpl(namespace, channelFactory);
-        final MessageChannel everyone = channelFactory.createChannelWithId(namespace.format(EVERYONE), true);
+        final MessageChannel everyone = channelFactory.createChannel(namespace.format(EVERYONE), true);
         this.channelLookup.registerStatic(everyone);
         this.everyone = audienceOf(Set.of(everyone));
         this.translators.add(new HeartbeatTranslator());
@@ -68,7 +68,9 @@ final class HazelnutImpl implements Hazelnut {
 
     @Override
     public @NotNull MessageAudience broadcast() {
-        return audienceOf(this.channelLookup.volatileChannels());
+        return audienceOf(this.channelLookup.volatileChannels().stream()
+                .filter(x -> x instanceof MessageChannelImpl.Outbound)
+                .collect(Collectors.toSet()));
     }
 
     @Override

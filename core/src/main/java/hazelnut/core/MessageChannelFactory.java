@@ -19,12 +19,23 @@ final class MessageChannelFactory {
         this.messageListener = requireNonNull(messageListener, "messageListener cannot be null");
     }
 
-    @NotNull MessageChannel createChannelWithId(final @NotNull String channelId, final boolean addListener) {
+    @NotNull MessageChannel createChannel(final @NotNull String channelId, final boolean addListener) {
         final MessageBus bus = this.busFactory.create(channelId);
         if (addListener) {
             bus.addListener(this.messageListener::consume);
         }
 
         return new MessageChannelImpl(channelId, bus, this.translators);
+    }
+
+    @NotNull MessageChannel createInbound(final @NotNull String channelId) {
+        final MessageBus bus = this.busFactory.create(channelId);
+        bus.addListener(this.messageListener::consume);
+        return new MessageChannelImpl.Inbound(channelId, bus, this.translators);
+    }
+
+    @NotNull MessageChannel createOutbound(final @NotNull String channelId) {
+        final MessageBus bus = this.busFactory.create(channelId);
+        return new MessageChannelImpl.Outbound(channelId, bus, this.translators);
     }
 }
