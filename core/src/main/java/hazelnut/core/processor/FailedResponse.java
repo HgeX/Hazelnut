@@ -6,13 +6,13 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Optional;
 import java.util.UUID;
 
-final class FailedResponse extends AbstractResponse {
+public final class FailedResponse extends AbstractResponse {
     private final String errorClassName;
     private final String errorMessage;
 
-    FailedResponse(final @NotNull UUID originalId,
-                   final @Nullable String errorClassName,
-                   final @Nullable String errorMessage) {
+    public FailedResponse(final @NotNull UUID originalId,
+                          final @Nullable String errorClassName,
+                          final @Nullable String errorMessage) {
         super(originalId, false);
         this.errorClassName = errorClassName;
         this.errorMessage = errorMessage;

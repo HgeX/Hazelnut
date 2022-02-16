@@ -4,9 +4,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
-final class SuccessfulResponse extends AbstractResponse {
+public final class SuccessfulResponse extends AbstractResponse {
 
-    SuccessfulResponse(final @NotNull UUID originalId) {
+    public SuccessfulResponse(final @NotNull UUID originalId) {
         super(originalId, true);
     }
 }
