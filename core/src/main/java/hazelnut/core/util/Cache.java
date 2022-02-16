@@ -94,6 +94,11 @@ public final class Cache<K, V> {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return this.entries.toString();
+    }
+
     private static final record Node<V>(@NotNull V value, long birth) {}
 
     public static <K, V> Builder<K, V> builder() {
