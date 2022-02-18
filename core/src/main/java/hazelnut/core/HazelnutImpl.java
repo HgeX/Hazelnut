@@ -27,6 +27,7 @@ final class HazelnutImpl implements Hazelnut {
     private final ProcessorRegistry processors = ProcessorRegistry.create();
     private final TranslatorRegistry translators;
     private final MessageChannelFactory channelFactory;
+    private final MessageBusFactory busFactory;
     private final String identity;
     private final Namespace namespace;
     private final Executor executor;
@@ -49,6 +50,7 @@ final class HazelnutImpl implements Hazelnut {
                 this.translators,
                 new IncomingMessageListener(this.translators, responseHandler)
         );
+        this.busFactory = busFactory;
         this.channelLookup = new ChannelLookupImpl(namespace, this.channelFactory, config);
         final MessageChannel.Duplex everyone = this.channelFactory.duplex(namespace.format(EVERYONE));
         this.channelLookup.registerStatic(everyone);
@@ -120,6 +122,8 @@ final class HazelnutImpl implements Hazelnut {
         for (final MessageChannel channel : channels) {
             channel.close();
         }
+
+        this.busFactory.close();
 
         if (this.executor instanceof ExecutorService executorService) {
             executorService.shutdown();

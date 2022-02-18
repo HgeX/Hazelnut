@@ -32,6 +32,11 @@ public final class RedisMessageBusFactory implements MessageBusFactory {
         return new RedisMessageBus(name, this.pool, this.executor);
     }
 
+    @Override
+    public void close() throws Exception {
+        this.pool.destroy();
+    }
+
     public static @NotNull RedisMessageBusFactory using(final @NotNull JedisPool pool, final @NotNull Executor executor) {
         return new RedisMessageBusFactory(pool, executor);
     }

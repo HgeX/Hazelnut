@@ -56,7 +56,6 @@ public final class RedisMessageBus implements MessageBus {
     @Override
     public void close() {
         this.subscribers.forEach(JedisPubSub::unsubscribe);
-        this.pool.destroy();
     }
 
     private static final class Subscriber extends JedisPubSub {
