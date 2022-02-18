@@ -5,6 +5,8 @@ import hazelnut.core.Namespace;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 public final class Miscellaneous {
@@ -40,5 +42,16 @@ public final class Miscellaneous {
                                                   final @NotNull String dest,
                                                   final @NotNull Namespace namespace) {
         return namespace.format(source + Hazelnut.PARTICIPANT_DELIMITER + dest);
+    }
+
+    public static void shutdownExecutor(final @NotNull ExecutorService executor) {
+        executor.shutdown();
+        try {
+            if (!executor.awaitTermination(1L, TimeUnit.SECONDS)) {
+                executor.shutdownNow();
+            }
+        } catch (final InterruptedException ex) {
+            executor.shutdownNow();
+        }
     }
 }

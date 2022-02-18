@@ -13,37 +13,27 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
 import java.util.Set;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static hazelnut.core.util.Miscellaneous.logger;
-
 final class HazelnutImpl implements Hazelnut {
-    private static final Logger LOGGER = logger(HazelnutImpl.class);
     private final ProcessorRegistry processors = ProcessorRegistry.create();
     private final TranslatorRegistry translators;
     private final MessageChannelFactory channelFactory;
     private final MessageBusFactory busFactory;
     private final String identity;
     private final Namespace namespace;
-    private final Executor executor;
     private final ChannelLookup channelLookup;
     private final MessageAudience everyone;
     private final HeartbeatTask heartbeatTask;
 
     HazelnutImpl(final @NotNull String identity,
                  final @NotNull Namespace namespace,
-                 final @NotNull Executor executor,
                  final @NotNull MessageBusFactory busFactory,
                  final @NotNull HazelnutConfig config) {
         this.translators = TranslatorRegistry.create(config);
         this.identity = identity;
         this.namespace = namespace;
-        this.executor = executor;
         final ResponseHandler responseHandler = new ResponseHandler(this, config);
         this.channelFactory = new MessageChannelFactoryImpl(
                 busFactory,
@@ -61,7 +51,7 @@ final class HazelnutImpl implements Hazelnut {
                 (ChannelLookupImpl) this.channelLookup,
                 namespace
         ));
-        this.heartbeatTask = new HeartbeatTask(this, executor, config);
+        this.heartbeatTask = new HeartbeatTask(this, config, namespace);
         this.heartbeatTask.start();
     }
 
@@ -124,24 +114,12 @@ final class HazelnutImpl implements Hazelnut {
         }
 
         this.busFactory.close();
-
-        if (this.executor instanceof ExecutorService executorService) {
-            executorService.shutdown();
-            try {
-                if (!executorService.awaitTermination(1L, TimeUnit.SECONDS)) {
-                    executorService.shutdownNow();
-                }
-            } catch (final InterruptedException ex) {
-                LOGGER.info("Shutting down executor, potentially interrupting running tasks...");
-                executorService.shutdownNow();
-            }
-        }
     }
 
     private @NotNull MessageAudience audienceOf(final @NotNull Set<MessageChannel.Outbound> channels) {
         return channels.isEmpty()
                 ? MessageAudience.EMPTY
-                : new MessageAudienceImpl(this.executor, channels, this.identity);
+                : new MessageAudienceImpl(channels, this.identity);
     }
 
     @Override
