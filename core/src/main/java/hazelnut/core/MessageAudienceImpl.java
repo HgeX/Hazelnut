@@ -9,11 +9,11 @@ import static java.util.Objects.requireNonNull;
 
 final class MessageAudienceImpl implements MessageAudience {
     private final Executor executor;
-    private final Set<MessageChannel> channels;
+    private final Set<MessageChannel.Outbound> channels;
     private final String identity;
 
     MessageAudienceImpl(final @NotNull Executor executor,
-                        final @NotNull Set<MessageChannel> channels,
+                        final @NotNull Set<MessageChannel.Outbound> channels,
                         final @NotNull String identity) {
         this.executor = requireNonNull(executor, "executor cannot be null");
         this.channels = requireNonNull(channels, "channels cannot be null");
@@ -21,7 +21,7 @@ final class MessageAudienceImpl implements MessageAudience {
     }
 
     @Override
-    public @NotNull Set<MessageChannel> channels() {
+    public @NotNull Set<MessageChannel.Outbound> channels() {
         return Set.copyOf(this.channels);
     }
 

@@ -18,6 +18,8 @@ public interface Hazelnut extends AutoCloseable {
 
     @NotNull ChannelLookup channelLookup();
 
+    @NotNull MessageChannelFactory channelFactory();
+
     @NotNull TranslatorRegistry translators();
 
     @NotNull ProcessorRegistry processors();

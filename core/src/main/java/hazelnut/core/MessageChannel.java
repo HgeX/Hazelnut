@@ -6,8 +6,15 @@ public interface MessageChannel extends AutoCloseable {
 
     @NotNull String channelId();
 
-    void send(final @NotNull HazelnutMessage<?> message);
-
     @Override
     void close() throws Exception;
+
+    interface Inbound extends MessageChannel {}
+
+    interface Outbound extends MessageChannel {
+
+        void send(final @NotNull HazelnutMessage<?> message);
+    }
+
+    interface Duplex extends Outbound, Inbound {}
 }

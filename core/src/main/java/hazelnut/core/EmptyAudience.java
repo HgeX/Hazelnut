@@ -14,7 +14,7 @@ final class EmptyAudience implements MessageAudience {
     private EmptyAudience() {}
 
     @Override
-    public @NotNull Set<MessageChannel> channels() {
+    public @NotNull Set<MessageChannel.Outbound> channels() {
         return Set.of();
     }
 

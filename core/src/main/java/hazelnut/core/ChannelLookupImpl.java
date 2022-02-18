@@ -86,27 +86,12 @@ public final class ChannelLookupImpl implements ChannelLookup {
     }
 
     @Override
-    public void registerStatic(final @NotNull String channelId) {
-        try {
-            this.lock.lock();
-            final String actualId = toNamespaced(this.namespace, channelId);
-            if (this.staticChannels.containsKey(actualId)) {
-                throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(actualId));
-            }
-
-            this.staticChannels.put(actualId, this.channelFactory.createChannel(actualId, false));
-        } finally {
-            this.lock.unlock();
-        }
-    }
-
-    @Override
     public void registerStatic(final @NotNull MessageChannel channel) {
         try {
             this.lock.lock();
             final String id = channel.channelId();
             if (this.staticChannels.containsKey(id)) {
-                throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(id));
+                throw new IllegalStateException("MessageChannel with id %s is already registered.".formatted(id));
             }
 
             this.staticChannels.put(id, channel);
@@ -116,20 +101,10 @@ public final class ChannelLookupImpl implements ChannelLookup {
     }
 
     @Override
-    public void registerVolatile(final @NotNull String channelId) {
-        final String actualId = toNamespaced(this.namespace, channelId);
-        if (this.volatileChannels.findByKey(channelId).isPresent()) {
-            throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(actualId));
-        }
-
-        this.volatileChannels.cache(actualId, this.channelFactory.createChannel(actualId, false));
-    }
-
-    @Override
     public void registerVolatile(final @NotNull MessageChannel channel) {
         final String id = channel.channelId();
         if (this.volatileChannels.findByKey(id).isPresent()) {
-            throw new IllegalStateException("MessageChannel with id %s is already registerd.".formatted(id));
+            throw new IllegalStateException("MessageChannel with id %s is already registered.".formatted(id));
         }
 
         this.volatileChannels.cache(id, channel);
@@ -140,8 +115,8 @@ public final class ChannelLookupImpl implements ChannelLookup {
             this.volatileChannels.rebirth(channelId);
         } else {
             final MessageChannel channel = subscribe
-                    ? this.channelFactory.createInbound(channelId)
-                    : this.channelFactory.createOutbound(channelId);
+                    ? this.channelFactory.inbound(channelId)
+                    : this.channelFactory.outbound(channelId);
             this.volatileChannels.cache(channelId, channel);
         }
     }

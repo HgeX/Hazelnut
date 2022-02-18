@@ -25,6 +25,7 @@ final class HazelnutImpl implements Hazelnut {
     private static final Logger LOGGER = logger(HazelnutImpl.class);
     private final ProcessorRegistry processors = ProcessorRegistry.create();
     private final TranslatorRegistry translators;
+    private final MessageChannelFactory channelFactory;
     private final String identity;
     private final Executor executor;
     private final ChannelLookup channelLookup;
@@ -40,13 +41,13 @@ final class HazelnutImpl implements Hazelnut {
         this.identity = identity;
         this.executor = executor;
         final ResponseHandler responseHandler = new ResponseHandler(this, config);
-        final MessageChannelFactory channelFactory = new MessageChannelFactory(
+        this.channelFactory = new MessageChannelFactoryImpl(
                 busFactory,
                 this.translators,
                 new IncomingMessageListener(this.translators, responseHandler)
         );
-        this.channelLookup = new ChannelLookupImpl(namespace, channelFactory, config);
-        final MessageChannel everyone = channelFactory.createChannel(namespace.format(EVERYONE), true);
+        this.channelLookup = new ChannelLookupImpl(namespace, this.channelFactory, config);
+        final MessageChannel.Duplex everyone = this.channelFactory.duplex(namespace.format(EVERYONE));
         this.channelLookup.registerStatic(everyone);
         this.everyone = audienceOf(Set.of(everyone));
         this.translators.add(new HeartbeatTranslator());
@@ -72,7 +73,8 @@ final class HazelnutImpl implements Hazelnut {
     @Override
     public @NotNull MessageAudience broadcast() {
         return audienceOf(this.channelLookup.volatileChannels().stream()
-                .filter(x -> x instanceof MessageChannelImpl.Outbound)
+                .filter(x -> x instanceof MessageChannel.Outbound)
+                .map(x -> (MessageChannel.Outbound) x)
                 .collect(Collectors.toSet()));
     }
 
@@ -80,6 +82,8 @@ final class HazelnutImpl implements Hazelnut {
     public @NotNull MessageAudience to(final @NotNull String name) throws IllegalArgumentException {
         final String actualId = this.identity + PARTICIPANT_DELIMITER + name;
         return this.channelLookup.find(actualId)
+                .filter(x -> x instanceof MessageChannel.Outbound)
+                .map(x -> (MessageChannel.Outbound) x)
                 .map(x -> audienceOf(Set.of(x)))
                 .orElse(MessageAudience.EMPTY);
     }
@@ -87,6 +91,11 @@ final class HazelnutImpl implements Hazelnut {
     @Override
     public @NotNull ChannelLookup channelLookup() {
         return this.channelLookup;
+    }
+
+    @Override
+    public @NotNull MessageChannelFactory channelFactory() {
+        return this.channelFactory;
     }
 
     @Override
@@ -122,7 +131,7 @@ final class HazelnutImpl implements Hazelnut {
         }
     }
 
-    private @NotNull MessageAudience audienceOf(final @NotNull Set<MessageChannel> channels) {
+    private @NotNull MessageAudience audienceOf(final @NotNull Set<MessageChannel.Outbound> channels) {
         return new MessageAudienceImpl(this.executor, channels, this.identity);
     }
 
