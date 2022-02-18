@@ -37,7 +37,9 @@ final class MessageChannelFactoryImpl implements MessageChannelFactory {
 
     @Override
     public @NotNull MessageChannel.Duplex duplex(final @NotNull String channelId) {
-        return new DuplexImpl(channelId, this.busFactory.create(channelId), this.translators);
+        final MessageBus messageBus = this.busFactory.create(channelId);
+        messageBus.addListener(this.messageListener::consume);
+        return new DuplexImpl(channelId, messageBus, this.translators);
     }
 
     private static final class InboundImpl extends AbstractMessageChannel implements MessageChannel.Inbound {
