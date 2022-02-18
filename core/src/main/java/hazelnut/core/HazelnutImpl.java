@@ -1,5 +1,6 @@
 package hazelnut.core;
 
+import hazelnut.core.config.HazelnutConfig;
 import hazelnut.core.processor.IncomingMessageListener;
 import hazelnut.core.processor.ProcessorRegistry;
 import hazelnut.core.processor.ResponseHandler;
@@ -22,8 +23,8 @@ import static hazelnut.core.util.Miscellaneous.logger;
 
 final class HazelnutImpl implements Hazelnut {
     private static final Logger LOGGER = logger(HazelnutImpl.class);
-    private final TranslatorRegistry translators = TranslatorRegistry.create();
     private final ProcessorRegistry processors = ProcessorRegistry.create();
+    private final TranslatorRegistry translators;
     private final String identity;
     private final Executor executor;
     private final ChannelLookup channelLookup;
@@ -33,16 +34,18 @@ final class HazelnutImpl implements Hazelnut {
     HazelnutImpl(final @NotNull String identity,
                  final @NotNull Namespace namespace,
                  final @NotNull Executor executor,
-                 final @NotNull MessageBusFactory busFactory) {
+                 final @NotNull MessageBusFactory busFactory,
+                 final @NotNull HazelnutConfig config) {
+        this.translators = TranslatorRegistry.create(config);
         this.identity = identity;
         this.executor = executor;
-        final ResponseHandler responseHandler = new ResponseHandler(this);
+        final ResponseHandler responseHandler = new ResponseHandler(this, config);
         final MessageChannelFactory channelFactory = new MessageChannelFactory(
                 busFactory,
                 this.translators,
                 new IncomingMessageListener(this.translators, responseHandler)
         );
-        this.channelLookup = new ChannelLookupImpl(namespace, channelFactory);
+        this.channelLookup = new ChannelLookupImpl(namespace, channelFactory, config);
         final MessageChannel everyone = channelFactory.createChannel(namespace.format(EVERYONE), true);
         this.channelLookup.registerStatic(everyone);
         this.everyone = audienceOf(Set.of(everyone));
@@ -52,7 +55,7 @@ final class HazelnutImpl implements Hazelnut {
                 (ChannelLookupImpl) this.channelLookup,
                 namespace
         ));
-        this.heartbeatTask = new HeartbeatTask(this, executor);
+        this.heartbeatTask = new HeartbeatTask(this, executor, config);
         this.heartbeatTask.start();
     }
 

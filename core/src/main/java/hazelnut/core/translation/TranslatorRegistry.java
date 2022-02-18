@@ -2,6 +2,7 @@ package hazelnut.core.translation;
 
 import hazelnut.core.HazelnutMessage;
 import hazelnut.core.Message;
+import hazelnut.core.config.HazelnutConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
@@ -9,8 +10,8 @@ import java.util.Set;
 
 public interface TranslatorRegistry {
 
-    static @NotNull TranslatorRegistry create() {
-        return new TranslatorRegistryImpl();
+    static @NotNull TranslatorRegistry create(final @NotNull HazelnutConfig config) {
+        return new TranslatorRegistryImpl(config);
     }
 
     void add(final @NotNull MessageTranslator<?> translator);
@@ -25,5 +26,5 @@ public interface TranslatorRegistry {
 
     @NotNull String stringify(final @NotNull HazelnutMessage<?> message) throws TranslationException;
 
-    @NotNull <T extends Message<T>> HazelnutMessage<T> parse(final @NotNull String message) throws TranslationException;
+    @NotNull <T extends Message<T>> Optional<HazelnutMessage<T>> parse(final @NotNull String message) throws TranslationException;
 }

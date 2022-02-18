@@ -3,6 +3,7 @@ package hazelnut.core.processor;
 import hazelnut.core.Hazelnut;
 import hazelnut.core.HazelnutMessage;
 import hazelnut.core.Message;
+import hazelnut.core.config.HazelnutConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -15,9 +16,12 @@ import static java.util.Objects.requireNonNull;
 public final class ResponseHandler {
     private static final Logger LOGGER = logger(ResponseHandler.class);
     private final Hazelnut hazelnut;
+    private final HazelnutConfig config;
 
-    public ResponseHandler(final @NotNull Hazelnut hazelnut) {
+    public ResponseHandler(final @NotNull Hazelnut hazelnut,
+                           final @NotNull HazelnutConfig config) {
         this.hazelnut = requireNonNull(hazelnut, "hazelnut cannot be null");
+        this.config = requireNonNull(config, "config cannot be null");
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
@@ -25,6 +29,7 @@ public final class ResponseHandler {
         final HazelnutMessage<?> message = context.message();
         final List<MessageProcessor<?>> processors = this.hazelnut.processors().find(message.data().type());
         if (processors.isEmpty()) {
+            this.config.noProcessorPolicy().handler().noProcessors(message.header().type());
             return Optional.empty();
         }
 

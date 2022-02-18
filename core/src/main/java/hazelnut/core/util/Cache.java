@@ -88,20 +88,18 @@ public final class Cache<K, V> {
         return this.entries.toString();
     }
 
-    private static final record Node<V>(@NotNull V value, long birth) {}
-
     public static <K, V> Builder<K, V> builder() {
         return new Builder<>();
     }
 
     public static final class Builder<K, V> {
-        private Duration lifetime;
+        private long lifetimeMillis;
         private Consumer<V> evictionListener;
 
         private Builder() {}
 
-        public @NotNull Builder<K, V> lifetime(final @NotNull Duration lifetime) {
-            this.lifetime = lifetime;
+        public @NotNull Builder<K, V> lifetime(final @NotNull long lifetimeMillis) {
+            this.lifetimeMillis = lifetimeMillis;
             return this;
         }
 
@@ -111,12 +109,13 @@ public final class Cache<K, V> {
         }
 
         public @NotNull Cache<K, V> build() {
-            requireNonNull(this.lifetime, "lifetime cannot be null");
             final Consumer<V> evictionListener = this.evictionListener != null
                     ? this.evictionListener
                     : x -> {};
 
-            return new Cache<>(this.lifetime.toMillis(), evictionListener);
+            return new Cache<>(this.lifetimeMillis, evictionListener);
         }
     }
+
+    private record Node<V>(@NotNull V value, long birth) {}
 }

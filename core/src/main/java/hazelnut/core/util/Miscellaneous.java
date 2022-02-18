@@ -26,4 +26,12 @@ public final class Miscellaneous {
 
         return namespace.format(value);
     }
+
+    public static <T> void requireState(final @NotNull T t,
+                                        final @NotNull BooleanFunction<T> mapper,
+                                        final @NotNull String message) {
+        if (!mapper.apply(t)) {
+            throw new IllegalStateException(message);
+        }
+    }
 }

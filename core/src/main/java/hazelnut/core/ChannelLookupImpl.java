@@ -1,10 +1,10 @@
 package hazelnut.core;
 
+import hazelnut.core.config.HazelnutConfig;
 import hazelnut.core.util.Cache;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -18,19 +18,22 @@ import static java.util.Objects.requireNonNull;
 
 public final class ChannelLookupImpl implements ChannelLookup {
     private static final Logger LOGGER = logger(ChannelLookupImpl.class);
-    private final Map<String, MessageChannel> staticChannels = new HashMap<>();
-    private final Cache<String, MessageChannel> volatileChannels = Cache.<String, MessageChannel>builder()
-            .lifetime(Duration.ofSeconds(10))
-            .evictionListener(this::onEviction)
-            .build();
     private final ReentrantLock lock = new ReentrantLock();
+    private final Map<String, MessageChannel> staticChannels = new HashMap<>();
+    private final Cache<String, MessageChannel> volatileChannels;
     private final Namespace namespace;
     private final MessageChannelFactory channelFactory;
 
     ChannelLookupImpl(final @NotNull Namespace namespace,
-                              final @NotNull MessageChannelFactory channelFactory) {
+                      final @NotNull MessageChannelFactory channelFactory,
+                      final @NotNull HazelnutConfig config) {
         this.namespace = requireNonNull(namespace, "namespace cannot be null");
         this.channelFactory = requireNonNull(channelFactory, "channelFactory cannot be null");
+        requireNonNull(config, "config cannot be null");
+        this.volatileChannels = Cache.<String, MessageChannel>builder()
+                .lifetime(config.cacheExpiryRate())
+                .evictionListener(this::onEviction)
+                .build();
     }
 
     private void onEviction(final @NotNull MessageChannel channel) {

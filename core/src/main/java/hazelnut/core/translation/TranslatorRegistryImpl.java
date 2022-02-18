@@ -6,6 +6,7 @@ import com.eclipsesource.json.JsonValue;
 import hazelnut.core.HazelnutMessage;
 import hazelnut.core.Message;
 import hazelnut.core.MessageHeader;
+import hazelnut.core.config.HazelnutConfig;
 import hazelnut.core.translation.builtin.ResponseTranslator;
 import org.jetbrains.annotations.NotNull;
 
@@ -16,11 +17,15 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.ReentrantLock;
 
+import static java.util.Objects.requireNonNull;
+
 final class TranslatorRegistryImpl implements TranslatorRegistry {
     private final Map<Class<?>, MessageTranslator<?>> translators = new HashMap<>();
     private final ReentrantLock lock = new ReentrantLock();
+    private final HazelnutConfig config;
 
-    TranslatorRegistryImpl() {
+    TranslatorRegistryImpl(final @NotNull HazelnutConfig config) {
+        this.config = requireNonNull(config, "config cannot be null");
         add(new ResponseTranslator());
     }
 
@@ -101,7 +106,7 @@ final class TranslatorRegistryImpl implements TranslatorRegistry {
 
     @Override
     @SuppressWarnings("unchecked")
-    public @NotNull <T extends Message<T>> HazelnutMessage<T> parse(final @NotNull String message) throws TranslationException {
+    public @NotNull <T extends Message<T>> Optional<HazelnutMessage<T>> parse(final @NotNull String message) throws TranslationException {
         final JsonValue json = Json.parse(message);
         if (!json.isObject()) {
             throw new IllegalStateException("Received corrupted (must be a valid JSON object): %s".formatted(message));
@@ -122,15 +127,18 @@ final class TranslatorRegistryImpl implements TranslatorRegistry {
         try {
             type = (Class<T>) Class.forName(typeStr);
         } catch (final ClassNotFoundException ex) {
-            throw new RuntimeException("Could not load class %s".formatted(typeStr), ex);
+            this.config.classNotFoundPolicy().handler().classNotFound(typeStr);
+            return Optional.empty();
         }
 
-        final MessageTranslator<T> translator = find(type)
-                .orElseThrow(() -> new IllegalStateException("Could not find message translator for type %s"
-                        .formatted(typeStr)));
+        final Optional<MessageTranslator<T>> translator = find(type);
+        if (translator.isEmpty()) {
+            this.config.missingTranslatorPolicy().handler().missingTranslator(type);
+            return Optional.empty();
+        }
 
-        final T data = translator.fromIntermediary(obj.get("data").asObject());
+        final T data = translator.orElseThrow().fromIntermediary(obj.get("data").asObject());
         final MessageHeader header = MessageHeader.of( messageId, originId, type);
-        return  new HazelnutMessage<>(header, data);
+        return Optional.of(new HazelnutMessage<>(header, data));
     }
 }

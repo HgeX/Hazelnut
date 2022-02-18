@@ -1,6 +1,5 @@
 package hazelnut.core.processor;
 
-import hazelnut.core.HazelnutMessage;
 import hazelnut.core.translation.TranslatorRegistry;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,8 +21,7 @@ public final class IncomingMessageListener {
 
     public void consume(final @NotNull String data) {
         try {
-            final HazelnutMessage<?> message = this.translators.parse(data);
-            this.responseHandler.respond(message);
+            this.translators.parse(data).ifPresent(this.responseHandler::respond);
 
         } catch (final Throwable ex) {
             LOGGER.warning("Encountered an unexpected exception while consuming incoming message:");

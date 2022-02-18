@@ -1,5 +1,6 @@
 package hazelnut.core;
 
+import hazelnut.core.config.HazelnutConfig;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.concurrent.Executor;
@@ -12,6 +13,7 @@ final class HazelnutBuilderImpl implements HazelnutBuilder {
     private Namespace namespace;
     private Executor executor;
     private MessageBusFactory busFactory;
+    private HazelnutConfig config;
 
     HazelnutBuilderImpl(final @NotNull String identity) {
         this.identity = requireNonNull(identity, "identity cannot be null");
@@ -36,16 +38,24 @@ final class HazelnutBuilderImpl implements HazelnutBuilder {
     }
 
     @Override
+    public @NotNull HazelnutBuilder config(final @NotNull HazelnutConfig config) {
+        this.config = config;
+        return this;
+    }
+
+    @Override
     public @NotNull Hazelnut build() {
         requireNonNull(this.namespace, "namespace cannot be null");
         requireNonNull(this.busFactory, "busFactory cannot be null");
+        requireNonNull(this.config, "config cannot be null");
 
         final Executor executor = this.executor == null ? Executors.newCachedThreadPool() : this.executor;
         return new HazelnutImpl(
                 this.identity,
                 this.namespace,
                 executor,
-                this.busFactory
+                this.busFactory,
+                this.config
         );
     }
 }
