@@ -1,5 +1,6 @@
 package hazelnut.core.util;
 
+import hazelnut.core.Hazelnut;
 import hazelnut.core.Namespace;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -33,5 +34,11 @@ public final class Miscellaneous {
         if (!mapper.apply(t)) {
             throw new IllegalStateException(message);
         }
+    }
+
+    public static @NotNull String formatChannelId(final @NotNull String source,
+                                                  final @NotNull String dest,
+                                                  final @NotNull Namespace namespace) {
+        return namespace.format(source + Hazelnut.PARTICIPANT_DELIMITER + dest);
     }
 }

@@ -1,7 +1,6 @@
 package hazelnut.core.protocol;
 
 import hazelnut.core.ChannelLookupImpl;
-import hazelnut.core.Hazelnut;
 import hazelnut.core.Message;
 import hazelnut.core.Namespace;
 import hazelnut.core.processor.MessageContext;
@@ -9,6 +8,7 @@ import hazelnut.core.processor.MessageProcessor;
 import hazelnut.core.processor.Response;
 import org.jetbrains.annotations.NotNull;
 
+import static hazelnut.core.util.Miscellaneous.formatChannelId;
 import static java.util.Objects.requireNonNull;
 
 public final class HeartbeatProcessor implements MessageProcessor<Heartbeat> {
@@ -34,8 +34,8 @@ public final class HeartbeatProcessor implements MessageProcessor<Heartbeat> {
         final String origin = context.message().header().originId();
         // Ignore our own messages
         if (!origin.equalsIgnoreCase(this.identity)) {
-            final String toChannel = this.namespace.format(this.identity + Hazelnut.PARTICIPANT_DELIMITER + origin);
-            final String fromChannel = this.namespace.format(origin + Hazelnut.PARTICIPANT_DELIMITER + this.identity);
+            final String toChannel = formatChannelId(this.identity, origin, this.namespace);
+            final String fromChannel = formatChannelId(origin, this.identity, this.namespace);
 
             this.channelLookup.updateVolatileChannel(toChannel, false);
             this.channelLookup.updateVolatileChannel(fromChannel, true);

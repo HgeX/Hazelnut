@@ -8,6 +8,7 @@ import hazelnut.core.protocol.HeartbeatProcessor;
 import hazelnut.core.protocol.HeartbeatTask;
 import hazelnut.core.protocol.HeartbeatTranslator;
 import hazelnut.core.translation.TranslatorRegistry;
+import hazelnut.core.util.Miscellaneous;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
@@ -27,6 +28,7 @@ final class HazelnutImpl implements Hazelnut {
     private final TranslatorRegistry translators;
     private final MessageChannelFactory channelFactory;
     private final String identity;
+    private final Namespace namespace;
     private final Executor executor;
     private final ChannelLookup channelLookup;
     private final MessageAudience everyone;
@@ -39,6 +41,7 @@ final class HazelnutImpl implements Hazelnut {
                  final @NotNull HazelnutConfig config) {
         this.translators = TranslatorRegistry.create(config);
         this.identity = identity;
+        this.namespace = namespace;
         this.executor = executor;
         final ResponseHandler responseHandler = new ResponseHandler(this, config);
         this.channelFactory = new MessageChannelFactoryImpl(
@@ -80,7 +83,7 @@ final class HazelnutImpl implements Hazelnut {
 
     @Override
     public @NotNull MessageAudience to(final @NotNull String name) throws IllegalArgumentException {
-        final String actualId = this.identity + PARTICIPANT_DELIMITER + name;
+        final String actualId = Miscellaneous.formatChannelId(this.identity, name, this.namespace);
         return this.channelLookup.find(actualId)
                 .filter(x -> x instanceof MessageChannel.Outbound)
                 .map(x -> (MessageChannel.Outbound) x)
@@ -132,7 +135,9 @@ final class HazelnutImpl implements Hazelnut {
     }
 
     private @NotNull MessageAudience audienceOf(final @NotNull Set<MessageChannel.Outbound> channels) {
-        return new MessageAudienceImpl(this.executor, channels, this.identity);
+        return channels.isEmpty()
+                ? MessageAudience.EMPTY
+                : new MessageAudienceImpl(this.executor, channels, this.identity);
     }
 
     @Override
