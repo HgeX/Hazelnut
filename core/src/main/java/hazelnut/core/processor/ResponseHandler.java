@@ -61,7 +61,14 @@ public final class ResponseHandler {
             return;
         }
 
-        this.hazelnut.to(message.header().originId())
-                .send(response.orElseThrow());
+        final String originId = message.header().originId();
+        /*
+         * Prevent responding to our own messages. This could
+         * happen when sending messages to the everyone channel.
+         */
+        if (!originId.equals(this.hazelnut.identity())) {
+            this.hazelnut.to(message.header().originId())
+                    .send(response.orElseThrow());
+        }
     }
 }
