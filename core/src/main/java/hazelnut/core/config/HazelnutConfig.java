@@ -3,7 +3,7 @@ package hazelnut.core.config;
 import org.jetbrains.annotations.NotNull;
 
 public interface HazelnutConfig {
-    long DEFAULT_CACHE_EXPIRY_RATE = 10000; // 10 seconds
+    long DEFAULT_CACHE_EXPIRY_RATE = 15000; // 15 seconds
     long DEFAULT_HEARTBEAT_RATE = 5000; // 5 seconds
 
     @NotNull ClassNotFoundPolicy classNotFoundPolicy();
