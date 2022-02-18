@@ -6,7 +6,7 @@ import static java.util.Objects.requireNonNull;
 
 public enum NoProcessorPolicy {
     IGNORE_(type -> {}),
-    FAIL(type -> NoProcessorHandler.LOGGER.warning("No processors present for type %s".formatted(type)));
+    WARN(type -> NoProcessorHandler.LOGGER.warning("No processors present for type %s".formatted(type)));
 
     private final NoProcessorHandler handler;
 

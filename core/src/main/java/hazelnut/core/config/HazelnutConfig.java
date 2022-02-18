@@ -27,7 +27,7 @@ public interface HazelnutConfig {
         return new HazelnutConfigImpl(
                 ClassNotFoundPolicy.FAIL,
                 MissingTranslatorPolicy.FAIL,
-                NoProcessorPolicy.FAIL,
+                NoProcessorPolicy.WARN,
                 HazelnutConfig.DEFAULT_CACHE_EXPIRY_RATE,
                 HazelnutConfig.DEFAULT_CACHE_HOUSEKEEPER_RATE,
                 HazelnutConfig.DEFAULT_HEARTBEAT_RATE
