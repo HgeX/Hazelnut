@@ -113,6 +113,7 @@ final class HazelnutImpl implements Hazelnut {
             channel.close();
         }
 
+        this.channelLookup.close();
         this.busFactory.close();
     }
 

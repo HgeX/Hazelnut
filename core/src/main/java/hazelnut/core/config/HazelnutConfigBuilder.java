@@ -14,6 +14,8 @@ public interface HazelnutConfigBuilder {
 
     @NotNull HazelnutConfigBuilder cacheExpiryRate(final int value, final @NotNull TimeUnit timeUnit);
 
+    @NotNull HazelnutConfigBuilder cacheHousekeeperRate(final int value, final @NotNull TimeUnit timeUnit);
+
     @NotNull HazelnutConfigBuilder heartbeatRate(final int value, final @NotNull TimeUnit timeUnit);
 
     @NotNull HazelnutConfig build();

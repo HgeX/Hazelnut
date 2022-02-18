@@ -10,8 +10,9 @@ final class HazelnutConfigBuilderImpl implements HazelnutConfigBuilder {
     private ClassNotFoundPolicy classNotFoundPolicy;
     private MissingTranslatorPolicy missingTranslatorPolicy;
     private NoProcessorPolicy noProcessorPolicy;
-    private long heartbeatRate;
     private long cacheExpiryRate;
+    private long cacheHousekeeperRate;
+    private long heartbeatRate;
 
     @Override
     public @NotNull HazelnutConfigBuilder policy(final @NotNull ClassNotFoundPolicy classNotFoundPolicy) {
@@ -39,6 +40,13 @@ final class HazelnutConfigBuilderImpl implements HazelnutConfigBuilder {
     }
 
     @Override
+    public @NotNull HazelnutConfigBuilder cacheHousekeeperRate(final int value, final @NotNull TimeUnit timeUnit) {
+        requireNonNull(timeUnit, "timeUnit cannot be null");
+        this.cacheHousekeeperRate = timeUnit.toMillis(value);
+        return this;
+    }
+
+    @Override
     public @NotNull HazelnutConfigBuilder heartbeatRate(int value, final @NotNull TimeUnit timeUnit) {
         requireNonNull(timeUnit, "timeUnit cannot be null");
         this.heartbeatRate = timeUnit.toMillis(value);
@@ -52,6 +60,7 @@ final class HazelnutConfigBuilderImpl implements HazelnutConfigBuilder {
                 this.missingTranslatorPolicy,
                 this.noProcessorPolicy,
                 this.cacheExpiryRate,
+                this.cacheHousekeeperRate,
                 this.heartbeatRate
         );
     }

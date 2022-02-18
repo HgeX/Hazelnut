@@ -3,25 +3,32 @@ package hazelnut.core.util;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.time.Duration;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import static java.lang.System.currentTimeMillis;
 import static java.util.Objects.requireNonNull;
 
-public final class Cache<K, V> {
+public final class Cache<K, V> implements AutoCloseable {
     private final Map<K, Node<V>> entries = new ConcurrentHashMap<>();
     private final long lifetime;
     private final Consumer<V> evictionListener;
+    private final ScheduledExecutorService housekeeper;
 
-    private Cache(final long lifetime, final @NotNull Consumer<V> evictionListener) {
+    private Cache(final long lifetime,
+                  final @NotNull Consumer<V> evictionListener,
+                  final long housekeeperRate,
+                  final ScheduledExecutorService housekeeper) {
         this.lifetime = lifetime;
         this.evictionListener = evictionListener;
+        this.housekeeper = housekeeper;
+        this.housekeeper.scheduleAtFixedRate(this::auditEntries, housekeeperRate, housekeeperRate, TimeUnit.MILLISECONDS);
     }
 
     public @NotNull Optional<V> findByKey(final @NotNull K key) {
@@ -66,6 +73,12 @@ public final class Cache<K, V> {
         return result;
     }
 
+    public void auditEntries() {
+        for (final Map.Entry<K, Node<V>> entry : this.entries.entrySet()) {
+            removeIfExpired(entry.getKey(), entry.getValue());
+        }
+    }
+
     // Return true if the node has expired
     private boolean checkExpiry(final @NotNull Node<V> node) {
         return node.birth() + this.lifetime < currentTimeMillis();
@@ -84,6 +97,12 @@ public final class Cache<K, V> {
     }
 
     @Override
+    public void close() throws Exception {
+        this.entries.clear();
+        Miscellaneous.shutdownExecutor(this.housekeeper);
+    }
+
+    @Override
     public String toString() {
         return this.entries.toString();
     }
@@ -95,10 +114,12 @@ public final class Cache<K, V> {
     public static final class Builder<K, V> {
         private long lifetimeMillis;
         private Consumer<V> evictionListener;
+        private ScheduledExecutorService housekeeper;
+        private long housekeeperRate;
 
         private Builder() {}
 
-        public @NotNull Builder<K, V> lifetime(final @NotNull long lifetimeMillis) {
+        public @NotNull Builder<K, V> lifetime(final long lifetimeMillis) {
             this.lifetimeMillis = lifetimeMillis;
             return this;
         }
@@ -108,12 +129,27 @@ public final class Cache<K, V> {
             return this;
         }
 
+        public @NotNull Builder<K, V> housekeeper(final @NotNull ScheduledExecutorService housekeeper) {
+            this.housekeeper = housekeeper;
+            return this;
+        }
+
+        public @NotNull Builder<K, V> housekeeperRate(final long housekeeperRate) {
+            this.housekeeperRate = housekeeperRate;
+            return this;
+        }
+
         public @NotNull Cache<K, V> build() {
             final Consumer<V> evictionListener = this.evictionListener != null
                     ? this.evictionListener
                     : x -> {};
 
-            return new Cache<>(this.lifetimeMillis, evictionListener);
+            return new Cache<>(
+                    this.lifetimeMillis,
+                    evictionListener,
+                    this.housekeeperRate,
+                    this.housekeeper
+            );
         }
     }
 

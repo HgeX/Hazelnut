@@ -2,6 +2,7 @@ package hazelnut.core;
 
 import hazelnut.core.config.HazelnutConfig;
 import hazelnut.core.util.Cache;
+import hazelnut.core.util.NamedThreadFactory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -9,6 +10,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Logger;
 
@@ -17,6 +20,7 @@ import static hazelnut.core.util.Miscellaneous.toNamespaced;
 import static java.util.Objects.requireNonNull;
 
 public final class ChannelLookupImpl implements ChannelLookup {
+    private static final String CACHE_HOUSEKEEPER_NAME = "hazelnut-cache-housekeeper #%d";
     private static final Logger LOGGER = logger(ChannelLookupImpl.class);
     private final ReentrantLock lock = new ReentrantLock();
     private final Map<String, MessageChannel> staticChannels = new HashMap<>();
@@ -30,9 +34,15 @@ public final class ChannelLookupImpl implements ChannelLookup {
         this.namespace = requireNonNull(namespace, "namespace cannot be null");
         this.channelFactory = requireNonNull(channelFactory, "channelFactory cannot be null");
         requireNonNull(config, "config cannot be null");
+        final ScheduledExecutorService cacheHousekeeper = Executors.newScheduledThreadPool(
+                1,
+                new NamedThreadFactory(namespace.format(CACHE_HOUSEKEEPER_NAME))
+        );
         this.volatileChannels = Cache.<String, MessageChannel>builder()
                 .lifetime(config.cacheExpiryRate())
                 .evictionListener(this::onEviction)
+                .housekeeperRate(config.cacheHouskeeperRate())
+                .housekeeper(cacheHousekeeper)
                 .build();
     }
 
@@ -108,6 +118,12 @@ public final class ChannelLookupImpl implements ChannelLookup {
         }
 
         this.volatileChannels.cache(id, channel);
+    }
+
+    @Override
+    public void close() throws Exception {
+        this.staticChannels.clear();
+        this.volatileChannels.close();
     }
 
     public void updateVolatileChannel(final @NotNull String channelId, final boolean subscribe) {
