@@ -3,21 +3,29 @@ package hazelnut.core;
 import hazelnut.core.processor.IncomingMessageListener;
 import hazelnut.core.translation.TranslationException;
 import hazelnut.core.translation.TranslatorRegistry;
+import hazelnut.core.util.NamedThreadFactory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 import java.util.logging.Logger;
 
 import static hazelnut.core.util.Miscellaneous.logger;
 import static java.util.Objects.requireNonNull;
 
 final class MessageChannelFactoryImpl implements MessageChannelFactory {
+    private static final String THREAD_NAME_PREFIX = "hazelnut-%s-bus-%s";
+    private final Namespace namespace;
     private final MessageBusFactory busFactory;
     private final TranslatorRegistry translators;
     private final IncomingMessageListener messageListener;
 
-    MessageChannelFactoryImpl(final @NotNull MessageBusFactory busFactory,
+    MessageChannelFactoryImpl(final @NotNull Namespace namespace,
+                              final @NotNull MessageBusFactory busFactory,
                               final @NotNull TranslatorRegistry translators,
                               final @NotNull IncomingMessageListener messageListener) {
+        this.namespace = requireNonNull(namespace, "namespace cannot be null");
         this.busFactory = requireNonNull(busFactory, "busFactory cannot be null");
         this.translators = requireNonNull(translators, "translators cannot be null");
         this.messageListener = requireNonNull(messageListener, "messageListener cannot be null");
@@ -25,21 +33,28 @@ final class MessageChannelFactoryImpl implements MessageChannelFactory {
 
     @Override
     public @NotNull MessageChannel.Inbound inbound(final @NotNull String channelId) {
-        final MessageBus messageBus = this.busFactory.create(channelId);
+        final MessageBus messageBus = this.busFactory.create(channelId, executor(channelId));
         messageBus.addListener(this.messageListener::consume);
         return new InboundImpl(channelId, messageBus);
     }
 
     @Override
     public @NotNull MessageChannel.Outbound outbound(final @NotNull String channelId) {
-        return new OutboundImpl(channelId, this.busFactory.create(channelId), this.translators);
+        return new OutboundImpl(channelId, this.busFactory.create(channelId, executor(channelId)), this.translators);
     }
 
     @Override
     public @NotNull MessageChannel.Duplex duplex(final @NotNull String channelId) {
-        final MessageBus messageBus = this.busFactory.create(channelId);
+        final MessageBus messageBus = this.busFactory.create(channelId, executor(channelId));
         messageBus.addListener(this.messageListener::consume);
         return new DuplexImpl(channelId, messageBus, this.translators);
+    }
+
+    private @NotNull Executor executor(final @NotNull String channelId) {
+        final String nameFormat = this.namespace.format(THREAD_NAME_PREFIX).formatted(this.busFactory.name(), channelId)
+                + " #%d";
+        final ThreadFactory threadFactory = new NamedThreadFactory(nameFormat);
+        return Executors.newCachedThreadPool(threadFactory);
     }
 
     private static final class InboundImpl extends AbstractMessageChannel implements MessageChannel.Inbound {

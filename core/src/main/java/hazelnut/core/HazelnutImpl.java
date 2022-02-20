@@ -36,6 +36,7 @@ final class HazelnutImpl implements Hazelnut {
         this.namespace = namespace;
         final ResponseHandler responseHandler = new ResponseHandler(this, config);
         this.channelFactory = new MessageChannelFactoryImpl(
+                namespace,
                 busFactory,
                 this.translators,
                 new IncomingMessageListener(this.translators, responseHandler)

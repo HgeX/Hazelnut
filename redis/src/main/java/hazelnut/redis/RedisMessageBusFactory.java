@@ -16,20 +16,23 @@ import static hazelnut.core.util.Miscellaneous.logger;
 import static java.util.Objects.requireNonNull;
 
 public final class RedisMessageBusFactory implements MessageBusFactory {
+    private static final String NAME = "redis";
     private static final Logger LOGGER = logger(RedisMessageBusFactory.class);
     private final JedisPool pool;
-    private final Executor executor;
 
-    private RedisMessageBusFactory(final @NotNull JedisPool pool,
-                                   final @NotNull Executor executor) {
+    private RedisMessageBusFactory(final @NotNull JedisPool pool) {
         this.pool = requireNonNull(pool, "pool cannot be null");
-        this.executor = requireNonNull(executor, "executor cannot be null");
     }
 
     @Override
-    public @NotNull MessageBus create(final @NotNull String name) {
+    public @NotNull String name() {
+        return NAME;
+    }
+
+    @Override
+    public @NotNull MessageBus create(final @NotNull String name, final @NotNull Executor executor) {
         LOGGER.info("Creating message channel with id: %s".formatted(name));
-        return new RedisMessageBus(name, this.pool, this.executor);
+        return new RedisMessageBus(name, this.pool, executor);
     }
 
     @Override
@@ -37,8 +40,8 @@ public final class RedisMessageBusFactory implements MessageBusFactory {
         this.pool.destroy();
     }
 
-    public static @NotNull RedisMessageBusFactory using(final @NotNull JedisPool pool, final @NotNull Executor executor) {
-        return new RedisMessageBusFactory(pool, executor);
+    public static @NotNull RedisMessageBusFactory using(final @NotNull JedisPool pool) {
+        return new RedisMessageBusFactory(pool);
     }
 
     public static @NotNull Builder builder() {
@@ -50,7 +53,6 @@ public final class RedisMessageBusFactory implements MessageBusFactory {
         private int port;
         private String username;
         private String password;
-        private Executor executor;
 
         private Builder() {}
 
@@ -74,14 +76,8 @@ public final class RedisMessageBusFactory implements MessageBusFactory {
             return this;
         }
 
-        public @NotNull Builder executor(final @NotNull Executor executor) {
-            this.executor = executor;
-            return this;
-        }
-
         public @NotNull RedisMessageBusFactory build() {
             final String host = requireNonNull(this.host, "host cannot be null");
-            final Executor executor = requireNonNull(this.executor, "executor cannot be null");
             final int port = this.port;
             final @Nullable String username = this.username;
             final @Nullable String password = this.password;
@@ -100,7 +96,7 @@ public final class RedisMessageBusFactory implements MessageBusFactory {
                 );
             }
 
-            return new RedisMessageBusFactory(pool, executor);
+            return new RedisMessageBusFactory(pool);
         }
     }
 }
