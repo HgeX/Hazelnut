@@ -11,4 +11,12 @@ public class TranslationException extends Exception {
     public TranslationException(final @NotNull String message) {
         super(message);
     }
+
+    public TranslationException(final @NotNull Throwable cause) {
+        super(cause);
+    }
+
+    public TranslationException(final @NotNull String message, final @NotNull Throwable cause) {
+        super(message, cause);
+    }
 }

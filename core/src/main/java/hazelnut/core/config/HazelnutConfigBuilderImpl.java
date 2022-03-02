@@ -33,21 +33,21 @@ final class HazelnutConfigBuilderImpl implements HazelnutConfigBuilder {
     }
 
     @Override
-    public @NotNull HazelnutConfigBuilder cacheExpiryRate(int value, @NotNull TimeUnit timeUnit) {
+    public @NotNull HazelnutConfigBuilder cacheExpiryRate(long value, @NotNull TimeUnit timeUnit) {
         requireNonNull(timeUnit, "timeUnit cannot be null");
         this.cacheExpiryRate = timeUnit.toMillis(value);
         return this;
     }
 
     @Override
-    public @NotNull HazelnutConfigBuilder cacheHousekeeperRate(final int value, final @NotNull TimeUnit timeUnit) {
+    public @NotNull HazelnutConfigBuilder cacheHousekeeperRate(final long value, final @NotNull TimeUnit timeUnit) {
         requireNonNull(timeUnit, "timeUnit cannot be null");
         this.cacheHousekeeperRate = timeUnit.toMillis(value);
         return this;
     }
 
     @Override
-    public @NotNull HazelnutConfigBuilder heartbeatRate(int value, final @NotNull TimeUnit timeUnit) {
+    public @NotNull HazelnutConfigBuilder heartbeatRate(final long value, final @NotNull TimeUnit timeUnit) {
         requireNonNull(timeUnit, "timeUnit cannot be null");
         this.heartbeatRate = timeUnit.toMillis(value);
         return this;
